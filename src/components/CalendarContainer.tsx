@@ -74,6 +74,8 @@ export interface CalendarContainerProps<T> {
   onPressEvent?: (event: ICalendarEvent<T>) => void
   weekEndsOn?: WeekNum
   maxVisibleEventCount?: number
+  cellHeight?: number
+  headerCellHeight?: number
 }
 
 dayjs.extend(isBetween)
@@ -103,6 +105,8 @@ function _CalendarContainer<T>({
   renderHeaderForMonthView: HeaderComponentForMonthView = CalendarHeaderForMonthView,
   weekEndsOn = 6,
   maxVisibleEventCount = 3,
+  cellHeight,
+  headerCellHeight,
 }: CalendarContainerProps<T>) {
   const [targetDate, setTargetDate] = React.useState(dayjs(date))
 
@@ -147,7 +151,10 @@ function _CalendarContainer<T>({
     }
   }, [dateRange, onChangeDate])
 
-  const cellHeight = React.useMemo(() => Math.max(height - 30, MIN_HEIGHT) / 24, [height])
+  const _cellHeight = React.useMemo(
+    () => (cellHeight ? cellHeight : Math.max(height - 30, MIN_HEIGHT) / 24),
+    [height, cellHeight],
+  )
 
   const theme = useTheme()
 
@@ -166,7 +173,7 @@ function _CalendarContainer<T>({
   )
 
   const commonProps = {
-    cellHeight,
+    cellHeight: _cellHeight,
     dateRange,
     mode,
   }
@@ -204,6 +211,7 @@ function _CalendarContainer<T>({
     style: headerContainerStyle,
     allDayEvents: allDayEvents,
     onPressDateHeader: onPressDateHeader,
+    headerCellHeight,
   }
 
   return (
