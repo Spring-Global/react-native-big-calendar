@@ -10,6 +10,7 @@ import { isToday, typedMemo } from '../utils'
 export interface CalendarHeaderProps<T> {
   dateRange: dayjs.Dayjs[]
   cellHeight: number
+  headerCellHeight?: number
   style: ViewStyle
   allDayEvents: ICalendarEvent<T>[]
   onPressDateHeader?: (date: Date) => void
@@ -21,6 +22,7 @@ function _CalendarHeader<T>({
   style,
   allDayEvents,
   onPressDateHeader,
+  headerCellHeight,
 }: CalendarHeaderProps<T>) {
   const _onPress = React.useCallback(
     (date: Date) => {
@@ -53,7 +55,7 @@ function _CalendarHeader<T>({
             disabled={onPressDateHeader === undefined}
             key={date.toString()}
           >
-            <View style={[u['justify-between'], { height: cellHeight }]}>
+            <View style={[u['justify-between'], { height: headerCellHeight ?? cellHeight }]}>
               <Text
                 style={[
                   theme.typography.xs,
@@ -100,7 +102,7 @@ function _CalendarHeader<T>({
               style={[
                 u['border-l'],
                 { borderColor: theme.palette.gray['200'] },
-                { height: cellHeight },
+                { height: headerCellHeight ?? cellHeight },
               ]}
             >
               {allDayEvents.map((event) => {
