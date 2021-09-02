@@ -1,3 +1,5 @@
+import 'dayjs/locale/ja'
+
 import { storiesOf } from '@storybook/react'
 import dayjs from 'dayjs'
 import React from 'react'
@@ -5,7 +7,7 @@ import { Alert, Dimensions, View } from 'react-native'
 
 import { Calendar } from '../src'
 import { CONTROL_HEIGHT, Control } from './components/Control'
-import { customEventRenderer, events } from './events'
+import { customEventRenderer, events, spanningEvents } from './events'
 import { useEvents } from './hooks'
 import { styles } from './styles'
 import { themes } from './themes'
@@ -93,6 +95,35 @@ storiesOf('showcase - Desktop', module)
       </View>
     )
   })
+  .add('Month mode - Spanning Events', () => {
+    const state = useEvents(spanningEvents)
+    return (
+      <View style={styles.desktop}>
+        <Calendar
+          mode="month"
+          height={SCREEN_HEIGHT}
+          events={state.events}
+          onPressEvent={(event) => alert(event.title)}
+          onPressCell={state.addEvent}
+        />
+      </View>
+    )
+  })
+  .add('Month mode - Spanning Events RTL', () => {
+    const state = useEvents(spanningEvents)
+    return (
+      <View style={styles.desktop}>
+        <Calendar
+          mode="month"
+          height={SCREEN_HEIGHT}
+          events={state.events}
+          onPressEvent={(event) => alert(event.title)}
+          onPressCell={state.addEvent}
+          isRTL
+        />
+      </View>
+    )
+  })
   .add('event cell style', () => (
     <View style={styles.desktop}>
       <Calendar
@@ -164,9 +195,6 @@ storiesOf('showcase - Desktop', module)
     )
   })
   .add('locale', () => {
-    React.useEffect(() => {
-      require('dayjs/locale/ja')
-    }, [])
     return (
       <View style={styles.desktop}>
         <Calendar locale="ja" height={SCREEN_HEIGHT} events={events} />
