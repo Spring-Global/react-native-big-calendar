@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import * as React from 'react'
-import { Platform, ScrollView, StyleSheet, View, ViewStyle } from 'react-native'
+import { Alert, Platform, ScrollView, StyleSheet, View, ViewStyle } from 'react-native'
 
 import { u } from '../commonStyles'
 import { useNow } from '../hooks/useNow'
@@ -116,7 +116,7 @@ function _CalendarBody<T>({
     <ScrollView
       style={[
         {
-          height: containerHeight - cellHeight * 3,
+          height: containerHeight - cellHeight * 1,
         },
         style,
       ]}
