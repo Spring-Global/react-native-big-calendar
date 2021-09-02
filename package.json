@@ -1,5 +1,5 @@
 {
-  "name": "@spring/react-native-big-calendar",
+  "name": "@spring-global/react-native-big-calendar",
   "version": "2.1.0",
   "main": "build/index.js",
   "jsnext:main": "build/index.es.js",
