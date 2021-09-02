@@ -5,7 +5,10 @@
   "jsnext:main": "build/index.es.js",
   "module": "build/index.es.js",
   "types": "build/index.d.ts",
-  "repository": "git@github.com:llotheo/react-native-big-calendar",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Spring-Global/react-native-big-calendar.git"
+  },
   "author": "gosho-kazuya <ketsume0211@gmail.com>",
   "license": "MIT",
   "scripts": {
@@ -93,5 +96,10 @@
   },
   "resolutions": {
     "typescript": "^4.3.5"
-  }
+  },
+  "description": "![test](https://github.com/Spring-Global/react-native-big-calendar/workflows/test/badge.svg)\r ![release](https://github.com/Spring-Global/react-native-big-calendar/workflows/release/badge.svg)\r [![npm version](https://badge.fury.io/js/react-native-big-calendar.svg)](https://badge.fury.io/js/react-native-big-calendar)\r [![Netlify Status](https://api.netlify.com/api/v1/badges/ca0f2cc8-bb4f-4a18-be48-c2b10e2b6046/deploy-status)](https://app.netlify.com/sites/react-native-big-calendar/deploys)\r [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=llotheo/react-native-big-calendar)](https://dependabot.com)",
+  "bugs": {
+    "url": "https://github.com/Spring-Global/react-native-big-calendar/issues"
+  },
+  "homepage": "https://github.com/Spring-Global/react-native-big-calendar#readme"
 }
