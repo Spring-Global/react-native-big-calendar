@@ -24,8 +24,7 @@
     "lint:fix": "yarn lint --fix",
     "watch": "rollup -cw",
     "prepublish": "npm run build",
-    "build": "npm-run-all build:clean build:ts",
-    "build:clean": "rimraf build/",
+    "build": "npm-run-all build:ts",
     "build:ts": "env NODE_ENV=production rollup -c"
   },
   "dependencies": {
@@ -97,7 +96,7 @@
   "resolutions": {
     "typescript": "^4.3.5"
   },
-  "description": "![test](https://github.com/Spring-Global/react-native-big-calendar/workflows/test/badge.svg)\r ![release](https://github.com/Spring-Global/react-native-big-calendar/workflows/release/badge.svg)\r [![npm version](https://badge.fury.io/js/react-native-big-calendar.svg)](https://badge.fury.io/js/react-native-big-calendar)\r [![Netlify Status](https://api.netlify.com/api/v1/badges/ca0f2cc8-bb4f-4a18-be48-c2b10e2b6046/deploy-status)](https://app.netlify.com/sites/react-native-big-calendar/deploys)\r [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=llotheo/react-native-big-calendar)](https://dependabot.com)",
+  "description": "Cross-platform gcal/outlook like calendar component for React Native. Forked from https://github.com/acro5piano/react-native-big-calendar",
   "bugs": {
     "url": "https://github.com/Spring-Global/react-native-big-calendar/issues"
   },
