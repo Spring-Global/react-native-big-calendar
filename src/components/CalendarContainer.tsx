@@ -27,6 +27,7 @@ import {
   typedMemo,
 } from '../utils'
 import { CalendarBody } from './CalendarBody'
+import { CalendarBodyForListView } from './CalendarBodyForListView'
 import { CalendarBodyForMonthView } from './CalendarBodyForMonthView'
 import { CalendarHeader } from './CalendarHeader'
 import { CalendarHeaderForMonthView } from './CalendarHeaderForMonthView'
@@ -129,6 +130,7 @@ function _CalendarContainer<T>({
   const dateRange = React.useMemo(() => {
     switch (mode) {
       case 'month':
+      case 'list':
         return getDatesInMonth(targetDate, locale)
       case 'week':
         return getDatesInWeek(targetDate, weekStartsOn, locale)
@@ -176,6 +178,24 @@ function _CalendarContainer<T>({
     cellHeight: _cellHeight,
     dateRange,
     mode,
+  }
+
+  if (mode === 'list') {
+    return (
+      <React.Fragment>
+        <CalendarBodyForListView<T>
+          {...commonProps}
+          style={bodyContainerStyle}
+          events={daytimeEvents}
+          eventCellStyle={eventCellStyle}
+          hideNowIndicator={hideNowIndicator}
+          ampm={ampm}
+          showTime={showTime}
+          onPressEvent={onPressEvent}
+          renderEvent={renderEvent}
+        />
+      </React.Fragment>
+    )
   }
 
   if (mode === 'month') {
