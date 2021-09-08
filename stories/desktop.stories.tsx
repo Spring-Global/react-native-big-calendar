@@ -24,6 +24,17 @@ function alert(input: any) {
 const SCREEN_HEIGHT = Dimensions.get('window').height
 
 storiesOf('showcase - Desktop', module)
+  .add('list mode', () => (
+    <View style={styles.desktop}>
+      <Calendar
+        height={SCREEN_HEIGHT}
+        events={events}
+        onPressEvent={(event) => alert(event.title)}
+        onPressCell={() => void 0}
+        mode="list"
+      />
+    </View>
+  ))
   .add('day mode', () => (
     <View style={styles.desktop}>
       <Calendar
