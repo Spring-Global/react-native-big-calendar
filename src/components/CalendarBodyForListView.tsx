@@ -1,4 +1,4 @@
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from 'dayjs'
 import * as React from 'react'
 import { FlatList, Platform, Text, View, ViewStyle } from 'react-native'
 
@@ -23,10 +23,9 @@ interface CalendarBodyForMonthViewProps<T> {
   eventCellStyle?: EventCellStyle<T>
   onPressEvent?: (event: ICalendarEvent<T>) => void
   renderEvent?: EventRenderer<T>
-  scrollToDate?: Dayjs
+  scrollToDate?: Date
   cellHeight: number
   containerHeight: number
-  flatListRef?: React.RefObject<FlatList<any>>
   onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined
   onEndReachedThreshold?: number | null | undefined
 }
@@ -38,15 +37,14 @@ function _CalendarBodyForListView<T>({
   ampm,
   renderEvent,
   cellHeight,
-  scrollToDate = dayjs().add(1, 'day'),
+  scrollToDate,
   containerHeight,
-  flatListRef,
   onEndReached,
   onEndReachedThreshold = 0.1,
 }: CalendarBodyForMonthViewProps<T>) {
   const theme = useTheme()
 
-  const flatListLocalRef = React.useRef<FlatList>(null)
+  const flatListRef = React.useRef<FlatList>(null)
 
   const eventsGroupedByDay = events
     .sort((a, b) => {
@@ -72,7 +70,7 @@ function _CalendarBodyForListView<T>({
       const eventIndex = eventsGroupedByDay.findIndex(
         (event) => event.dateString === dayjs(scrollToDate).format('YYYY-MM-DD'),
       )
-      flatListLocalRef.current?.scrollToIndex({ index: eventIndex, animated: false })
+      flatListRef.current?.scrollToIndex({ index: eventIndex, animated: false })
     }
   }, [scrollToDate, eventsGroupedByDay])
 
@@ -149,7 +147,7 @@ function _CalendarBodyForListView<T>({
   return (
     <View style={{ height: containerHeight }}>
       <FlatList
-        ref={flatListRef ?? flatListLocalRef}
+        ref={flatListRef}
         keyExtractor={(item) => item.dateString}
         data={eventsGroupedByDay}
         renderItem={renderItem}
