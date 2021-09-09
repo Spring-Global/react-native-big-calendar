@@ -75,8 +75,27 @@ export interface CalendarContainerProps<T> {
   onPressEvent?: (event: ICalendarEvent<T>) => void
   weekEndsOn?: WeekNum
   maxVisibleEventCount?: number
+  /**
+   * Custom calendar row height.
+   */
   cellHeight?: number
+  /**
+   * Calendar header row height.
+   */
   headerCellHeight?: number
+  /**
+   * Scroll to especific date on list visualization mode.
+   */
+  scrollToDate?: Date
+
+  /**
+   * Flatlist callback `onEndReached` for list visualization mode.
+   */
+  onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined
+  /**
+   * Flatlist callback `onEndReachedThreshold` for list visualization mode. Default: `0.1`
+   */
+  onEndReachedThreshold?: number | null | undefined
 }
 
 dayjs.extend(isBetween)
@@ -108,6 +127,7 @@ function _CalendarContainer<T>({
   maxVisibleEventCount = 3,
   cellHeight,
   headerCellHeight,
+  scrollToDate,
 }: CalendarContainerProps<T>) {
   const [targetDate, setTargetDate] = React.useState(dayjs(date))
 
@@ -193,6 +213,7 @@ function _CalendarContainer<T>({
           onPressEvent={onPressEvent}
           renderEvent={renderEvent}
           containerHeight={height}
+          scrollToDate={scrollToDate}
         />
       </React.Fragment>
     )
