@@ -1,22 +1,19 @@
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import * as React from 'react'
-import { Platform, ScrollView, StyleSheet, Text, View, ViewStyle } from 'react-native'
+import { FlatList, Platform, Text, View, ViewStyle } from 'react-native'
 
 import { u } from '../commonStyles'
-import { useNow } from '../hooks/useNow'
 import { EventCellStyle, EventRenderer, ICalendarEvent } from '../interfaces'
 import { useTheme } from '../theme/ThemeContext'
-import { getRelativeTopInDay, isToday, typedMemo } from '../utils'
+import { isToday, typedMemo } from '../utils'
 import { CalendarEventForListView } from './CalendarEventForListView'
 
-const styles = StyleSheet.create({
-  nowIndicator: {
-    position: 'absolute',
-    zIndex: 10000,
-    height: 2,
-    width: '100%',
-  },
-})
+const ITEM_SPACING = 12
+
+interface EventGroup<T> {
+  dateString: string
+  data: ICalendarEvent<T>[]
+}
 
 interface CalendarBodyForMonthViewProps<T> {
   events: ICalendarEvent<T>[]
@@ -24,130 +21,148 @@ interface CalendarBodyForMonthViewProps<T> {
   showTime: boolean
   style: ViewStyle
   eventCellStyle?: EventCellStyle<T>
-  hideNowIndicator?: boolean
   onPressEvent?: (event: ICalendarEvent<T>) => void
   renderEvent?: EventRenderer<T>
+  scrollToDate?: Dayjs
+  cellHeight: number
+  containerHeight: number
+  flatListRef?: React.RefObject<FlatList<any>>
+  onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined
+  onEndReachedThreshold?: number | null | undefined
 }
 
 function _CalendarBodyForListView<T>({
-  style,
   events,
   onPressEvent,
   eventCellStyle,
   ampm,
-  hideNowIndicator,
   renderEvent,
+  cellHeight,
+  scrollToDate = dayjs().add(1, 'day'),
+  containerHeight,
+  flatListRef,
+  onEndReached,
+  onEndReachedThreshold = 0.1,
 }: CalendarBodyForMonthViewProps<T>) {
-  const scrollView = React.useRef<ScrollView>(null)
-  const { now } = useNow(!hideNowIndicator)
   const theme = useTheme()
+
+  const flatListLocalRef = React.useRef<FlatList>(null)
 
   const eventsGroupedByDay = events
     .sort((a, b) => {
       return a.start.getTime() - b.start.getTime()
     })
     .reduce((elements, event) => {
-      if (!elements[dayjs(event.start).format('YYYY-MM-DD')])
-        elements[dayjs(event.start).format('YYYY-MM-DD')] = []
-      elements[dayjs(event.start).format('YYYY-MM-DD')].push(event)
+      let element = elements.find(
+        (item) => item.dateString === dayjs(event.start).format('YYYY-MM-DD'),
+      )
+
+      if (!element) {
+        element = { dateString: dayjs(event.start).format('YYYY-MM-DD'), data: [] }
+        elements.push(element)
+      }
+
+      element.data.push(event)
+
       return elements
-    }, {} as any)
+    }, [] as EventGroup<T>[])
+
+  React.useEffect(() => {
+    if (scrollToDate) {
+      const eventIndex = eventsGroupedByDay.findIndex(
+        (event) => event.dateString === dayjs(scrollToDate).format('YYYY-MM-DD'),
+      )
+      flatListLocalRef.current?.scrollToIndex({ index: eventIndex, animated: false })
+    }
+  }, [scrollToDate, eventsGroupedByDay])
 
   const primaryBg = { backgroundColor: theme.palette.primary.main }
 
-  return (
-    <ScrollView
-      style={[
-        {
-          height: '100%',
-        },
-        style,
-      ]}
-      ref={scrollView}
-      scrollEventThrottle={32}
-      showsVerticalScrollIndicator={false}
-      nestedScrollEnabled
-    >
-      <View style={[u['flex-1']]}>
-        {Object.keys(eventsGroupedByDay).map((dateString) => {
-          const date = dayjs(dateString)
-          const _isToday = isToday(dayjs(dateString))
+  const renderItem = (result: { item: EventGroup<T> }) => {
+    const dateString = result.item.dateString
+    const date = dayjs(dateString)
+    const _isToday = isToday(date)
 
-          return (
-            <View key={dateString} style={[u['flex-row'], { marginVertical: 12 }]}>
-              <View style={{ width: 60 }}>
-                <Text
-                  style={[
-                    theme.typography.xs,
-                    u['text-center'],
-                    { color: _isToday ? theme.palette.primary.main : theme.palette.gray['500'] },
-                  ]}
-                >
-                  {date.format('ddd')}
-                </Text>
-                <View
-                  style={
-                    _isToday
-                      ? [
-                          primaryBg,
-                          u['h-36'],
-                          u['w-36'],
-                          u['pb-6'],
-                          u['rounded-full'],
-                          u['items-center'],
-                          u['justify-center'],
-                          u['self-center'],
-                          u['z-20'],
-                        ]
-                      : [u['mb-6']]
-                  }
-                >
-                  <Text
-                    style={[
-                      {
-                        color: _isToday
-                          ? theme.palette.primary.contrastText
-                          : theme.palette.gray['800'],
-                      },
-                      theme.typography.xl,
-                      u['text-center'],
-                      Platform.OS === 'web' && _isToday && u['mt-6'],
-                    ]}
-                  >
-                    {date.format('D')}
-                  </Text>
-                </View>
-              </View>
+    return (
+      <View style={[u['flex-row'], { marginVertical: ITEM_SPACING }]}>
+        <View style={{ width: 60 }}>
+          <Text
+            style={[
+              theme.typography.xs,
+              u['text-center'],
+              { color: _isToday ? theme.palette.primary.main : theme.palette.gray['500'] },
+            ]}
+          >
+            {date.format('ddd')}
+          </Text>
+          <View
+            style={
+              _isToday
+                ? [
+                    primaryBg,
+                    u['h-36'],
+                    u['w-36'],
+                    u['pb-6'],
+                    u['rounded-full'],
+                    u['items-center'],
+                    u['justify-center'],
+                    u['self-center'],
+                    u['z-20'],
+                  ]
+                : [u['mb-6']]
+            }
+          >
+            <Text
+              style={[
+                {
+                  color: _isToday ? theme.palette.primary.contrastText : theme.palette.gray['800'],
+                },
+                theme.typography.xl,
+                u['text-center'],
+                Platform.OS === 'web' && _isToday && u['mt-6'],
+              ]}
+            >
+              {date.format('D')}
+            </Text>
+          </View>
+        </View>
 
-              <View style={[u['flex-1']]}>
-                {eventsGroupedByDay[dateString].map((event: ICalendarEvent<T>, index: number) => {
-                  return (
-                    <CalendarEventForListView
-                      key={index}
-                      ampm={ampm}
-                      isRTL={theme.isRTL}
-                      event={event}
-                      eventCellStyle={eventCellStyle}
-                      onPressEvent={onPressEvent}
-                      renderEvent={renderEvent}
-                    />
-                  )
-                })}
-              </View>
-              {isToday(dayjs(dateString)) && !hideNowIndicator && (
-                <View
-                  style={[
-                    styles.nowIndicator,
-                    { backgroundColor: theme.palette.nowIndicator },
-                    { top: `${getRelativeTopInDay(now)}%` },
-                  ]}
-                />
-              )}
-            </View>
-          )
-        })}
+        <View style={[u['flex-1']]}>
+          {result.item.data.map((event: ICalendarEvent<T>, index: number) => {
+            return (
+              <CalendarEventForListView
+                key={index}
+                ampm={ampm}
+                isRTL={theme.isRTL}
+                event={event}
+                eventCellStyle={eventCellStyle}
+                onPressEvent={onPressEvent}
+                renderEvent={renderEvent}
+              />
+            )
+          })}
+        </View>
       </View>
-    </ScrollView>
+    )
+  }
+
+  return (
+    <View style={{ height: containerHeight }}>
+      <FlatList
+        ref={flatListRef ?? flatListLocalRef}
+        keyExtractor={(item) => item.dateString}
+        data={eventsGroupedByDay}
+        renderItem={renderItem}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={onEndReachedThreshold}
+        showsVerticalScrollIndicator={false}
+        getItemLayout={(data, index) => ({
+          length: data![index].data.length * (cellHeight + ITEM_SPACING * 2),
+          offset: data![index].data.length * (cellHeight + ITEM_SPACING * 2) * index,
+          index,
+        })}
+      />
+    </View>
   )
 }
 
