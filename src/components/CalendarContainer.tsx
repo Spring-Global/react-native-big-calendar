@@ -188,11 +188,11 @@ function _CalendarContainer<T>({
           style={bodyContainerStyle}
           events={daytimeEvents}
           eventCellStyle={eventCellStyle}
-          hideNowIndicator={hideNowIndicator}
           ampm={ampm}
           showTime={showTime}
           onPressEvent={onPressEvent}
           renderEvent={renderEvent}
+          containerHeight={height}
         />
       </React.Fragment>
     )
