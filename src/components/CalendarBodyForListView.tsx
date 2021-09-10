@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import * as React from 'react'
-import { FlatList, Platform, Text, View, ViewStyle } from 'react-native'
+import { FlatList, LayoutChangeEvent, Platform, Text, View, ViewStyle } from 'react-native'
 
 import { u } from '../commonStyles'
 import { EventCellStyle, EventRenderer, ICalendarEvent } from '../interfaces'
@@ -24,7 +24,6 @@ interface CalendarBodyForMonthViewProps<T> {
   onPressEvent?: (event: ICalendarEvent<T>) => void
   renderEvent?: EventRenderer<T>
   scrollToDate?: Date
-  cellHeight: number
   containerHeight: number
   onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined
   onEndReachedThreshold?: number | null | undefined
@@ -36,7 +35,6 @@ function _CalendarBodyForListView<T>({
   eventCellStyle,
   ampm,
   renderEvent,
-  cellHeight,
   scrollToDate,
   containerHeight,
   onEndReached,
@@ -45,6 +43,10 @@ function _CalendarBodyForListView<T>({
   const theme = useTheme()
 
   const flatListRef = React.useRef<FlatList>(null)
+
+  const [itemHeights, setItemHeights] = React.useState<{ index: number; height: number }[]>([])
+
+  const primaryBg = { backgroundColor: theme.palette.primary.main }
 
   const eventsGroupedByDay = events
     .sort((a, b) => {
@@ -70,19 +72,33 @@ function _CalendarBodyForListView<T>({
       const eventIndex = eventsGroupedByDay.findIndex(
         (event) => event.dateString === dayjs(scrollToDate).format('YYYY-MM-DD'),
       )
-      flatListRef.current?.scrollToIndex({ index: eventIndex, animated: false })
+      if (eventIndex !== -1) {
+        setTimeout(() => {
+          flatListRef.current?.scrollToIndex({ index: eventIndex, animated: false })
+        }, 300)
+      }
     }
-  }, [scrollToDate, eventsGroupedByDay])
+  }, [eventsGroupedByDay, scrollToDate])
 
-  const primaryBg = { backgroundColor: theme.palette.primary.main }
+  const onLayoutItem = (event: LayoutChangeEvent, index: number) => {
+    const height = event.nativeEvent.layout.height
+    setItemHeights((prevState) => {
+      const copy = [...prevState]
+      const newItem = { index, height }
+      return [...copy, newItem]
+    })
+  }
 
-  const renderItem = (result: { item: EventGroup<T> }) => {
+  const renderItem = (result: { item: EventGroup<T>; index: number }) => {
     const dateString = result.item.dateString
     const date = dayjs(dateString)
     const _isToday = isToday(date)
 
     return (
-      <View style={[u['flex-row'], { marginVertical: ITEM_SPACING }]}>
+      <View
+        style={[u['flex-row'], { marginVertical: ITEM_SPACING }]}
+        onLayout={(event) => onLayoutItem(event, result.index)}
+      >
         <View style={{ width: 60 }}>
           <Text
             style={[
@@ -154,11 +170,12 @@ function _CalendarBodyForListView<T>({
         onEndReached={onEndReached}
         onEndReachedThreshold={onEndReachedThreshold}
         showsVerticalScrollIndicator={false}
-        getItemLayout={(data, index) => ({
-          length: data![index].data.length * (cellHeight + ITEM_SPACING * 2),
-          offset: data![index].data.length * (cellHeight + ITEM_SPACING * 2) * index,
-          index,
-        })}
+        getItemLayout={(_, index) => {
+          const length =
+            itemHeights.length !== 0 ? itemHeights.find((item) => item.index === index)?.height : 0
+          const offset = itemHeights.slice(0, index).reduce((a, c) => a + c.height, 0)
+          return { length: length!, offset, index }
+        }}
       />
     </View>
   )
