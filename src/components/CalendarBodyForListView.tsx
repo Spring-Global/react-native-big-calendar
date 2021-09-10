@@ -10,6 +10,11 @@ import { CalendarEventForListView } from './CalendarEventForListView'
 
 const ITEM_SPACING = 12
 
+type ItemsHeight = {
+  index: number
+  height: number
+}
+
 interface EventGroup<T> {
   dateString: string
   data: ICalendarEvent<T>[]
@@ -44,28 +49,32 @@ function _CalendarBodyForListView<T>({
 
   const flatListRef = React.useRef<FlatList>(null)
 
-  const [itemHeights, setItemHeights] = React.useState<{ index: number; height: number }[]>([])
+  const itemsHeightRef = React.useRef<ItemsHeight[]>([]).current
 
   const primaryBg = { backgroundColor: theme.palette.primary.main }
 
-  const eventsGroupedByDay = events
-    .sort((a, b) => {
-      return a.start.getTime() - b.start.getTime()
-    })
-    .reduce((elements, event) => {
-      let element = elements.find(
-        (item) => item.dateString === dayjs(event.start).format('YYYY-MM-DD'),
-      )
+  const eventsGroupedByDay = React.useMemo(
+    () =>
+      events
+        .sort((a, b) => {
+          return a.start.getTime() - b.start.getTime()
+        })
+        .reduce((elements, event) => {
+          let element = elements.find(
+            (item) => item.dateString === dayjs(event.start).format('YYYY-MM-DD'),
+          )
 
-      if (!element) {
-        element = { dateString: dayjs(event.start).format('YYYY-MM-DD'), data: [] }
-        elements.push(element)
-      }
+          if (!element) {
+            element = { dateString: dayjs(event.start).format('YYYY-MM-DD'), data: [] }
+            elements.push(element)
+          }
 
-      element.data.push(event)
+          element.data.push(event)
 
-      return elements
-    }, [] as EventGroup<T>[])
+          return elements
+        }, [] as EventGroup<T>[]),
+    [events],
+  )
 
   React.useEffect(() => {
     if (scrollToDate) {
@@ -82,11 +91,8 @@ function _CalendarBodyForListView<T>({
 
   const onLayoutItem = (event: LayoutChangeEvent, index: number) => {
     const height = event.nativeEvent.layout.height
-    setItemHeights((prevState) => {
-      const copy = [...prevState]
-      const newItem = { index, height }
-      return [...copy, newItem]
-    })
+
+    itemsHeightRef.push({ index, height })
   }
 
   const renderItem = (result: { item: EventGroup<T>; index: number }) => {
@@ -172,8 +178,10 @@ function _CalendarBodyForListView<T>({
         showsVerticalScrollIndicator={false}
         getItemLayout={(_, index) => {
           const length =
-            itemHeights.length !== 0 ? itemHeights.find((item) => item.index === index)?.height : 0
-          const offset = itemHeights.slice(0, index).reduce((a, c) => a + c.height, 0)
+            itemsHeightRef.length !== 0
+              ? itemsHeightRef.find((item) => item.index === index)?.height
+              : 0
+          const offset = itemsHeightRef.slice(0, index).reduce((a, c) => a + c.height, 0)
           return { length: length!, offset, index }
         }}
       />

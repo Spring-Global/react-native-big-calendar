@@ -91,7 +91,7 @@ export function todayInMinutes() {
 }
 
 export function modeToNum(mode: Mode, current?: dayjs.Dayjs | Date): number {
-  if (mode === 'month') {
+  if (mode === 'month' || mode === 'list') {
     if (!current) {
       throw new Error('You must specify current date if mode is month')
     }
