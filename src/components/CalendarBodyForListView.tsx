@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import * as React from 'react'
-import { FlatList, LayoutChangeEvent, Platform, Text, View, ViewStyle } from 'react-native'
+import { LayoutChangeEvent, Platform, SectionList, Text, View, ViewStyle } from 'react-native'
 
 import { u } from '../commonStyles'
 import { EventCellStyle, EventRenderer, ICalendarEvent } from '../interfaces'
@@ -15,9 +15,14 @@ type ItemsHeight = {
   height: number
 }
 
-interface EventGroup<T> {
+type Event<T> = {
   dateString: string
-  data: ICalendarEvent<T>[]
+  events: ICalendarEvent<T>[]
+}
+
+type EventGroup<T> = {
+  title: string
+  data: Event<T>[]
 }
 
 interface CalendarBodyForMonthViewProps<T> {
@@ -47,12 +52,13 @@ function _CalendarBodyForListView<T>({
 }: CalendarBodyForMonthViewProps<T>) {
   const theme = useTheme()
 
-  const flatListRef = React.useRef<FlatList>(null)
+  const sectionListRef = React.useRef<SectionList>(null)
 
   const itemsHeightRef = React.useRef<ItemsHeight[]>([]).current
 
   const primaryBg = { backgroundColor: theme.palette.primary.main }
 
+  // Group events by month, and then by date
   const eventsGroupedByDay = React.useMemo(
     () =>
       events
@@ -60,16 +66,27 @@ function _CalendarBodyForListView<T>({
           return a.start.getTime() - b.start.getTime()
         })
         .reduce((elements, event) => {
-          let element = elements.find(
-            (item) => item.dateString === dayjs(event.start).format('YYYY-MM-DD'),
-          )
+          const eventDate = dayjs(event.start)
+          let element = elements.find((item) => item.title === eventDate.format('YYYY-MM'))
 
           if (!element) {
-            element = { dateString: dayjs(event.start).format('YYYY-MM-DD'), data: [] }
+            const month = eventDate.format('YYYY-MM')
+
+            element = { title: month, data: [] }
             elements.push(element)
           }
 
-          element.data.push(event)
+          let groupEvent = element.data.find(
+            (el) => el.dateString === eventDate.format('YYYY-MM-DD'),
+          )
+
+          if (!groupEvent) {
+            const data: Event<T> = { dateString: eventDate.format('YYYY-MM-DD'), events: [] }
+            data.events.push(event)
+            element.data.push(data)
+          } else {
+            groupEvent.events.push(event)
+          }
 
           return elements
         }, [] as EventGroup<T>[]),
@@ -78,13 +95,23 @@ function _CalendarBodyForListView<T>({
 
   React.useEffect(() => {
     if (scrollToDate) {
-      const eventIndex = eventsGroupedByDay.findIndex(
-        (event) => event.dateString === dayjs(scrollToDate).format('YYYY-MM-DD'),
+      const eventGroupIndex = eventsGroupedByDay.findIndex(
+        (group) => group.title === dayjs(scrollToDate).format('YYYY-MM'),
       )
-      if (eventIndex !== -1) {
-        setTimeout(() => {
-          flatListRef.current?.scrollToIndex({ index: eventIndex, animated: false })
-        }, 300)
+      if (eventGroupIndex !== -1) {
+        const eventIndex = eventsGroupedByDay[eventGroupIndex].data.findIndex(
+          (event) => event.dateString === dayjs(scrollToDate).format('YYYY-MM-DD'),
+        )
+
+        if (eventIndex !== -1) {
+          setTimeout(() => {
+            sectionListRef.current?.scrollToLocation({
+              sectionIndex: eventGroupIndex,
+              itemIndex: eventIndex,
+              animated: true,
+            })
+          }, 300)
+        }
       }
     }
   }, [eventsGroupedByDay, scrollToDate])
@@ -95,7 +122,7 @@ function _CalendarBodyForListView<T>({
     itemsHeightRef.push({ index, height })
   }
 
-  const renderItem = (result: { item: EventGroup<T>; index: number }) => {
+  const renderItem = (result: { item: Event<T>; index: number }) => {
     const dateString = result.item.dateString
     const date = dayjs(dateString)
     const _isToday = isToday(date)
@@ -148,7 +175,7 @@ function _CalendarBodyForListView<T>({
         </View>
 
         <View style={[u['flex-1']]}>
-          {result.item.data.map((event: ICalendarEvent<T>, index: number) => {
+          {result.item.events.map((event: ICalendarEvent<T>, index: number) => {
             return (
               <CalendarEventForListView
                 key={index}
@@ -168,21 +195,26 @@ function _CalendarBodyForListView<T>({
 
   return (
     <View style={{ height: containerHeight }}>
-      <FlatList
-        ref={flatListRef}
-        keyExtractor={(item) => item.dateString}
-        data={eventsGroupedByDay}
+      <SectionList
+        ref={sectionListRef}
+        keyExtractor={(item, index) => item.dateString + index}
         renderItem={renderItem}
         onEndReached={onEndReached}
         onEndReachedThreshold={onEndReachedThreshold}
         showsVerticalScrollIndicator={false}
+        sections={eventsGroupedByDay}
+        renderSectionHeader={({ section: { title } }) => (
+          <Text style={[theme.typography.xl]}>{dayjs(title).format('MMM, YYYY')}</Text>
+        )}
         getItemLayout={(_, index) => {
           const length =
             itemsHeightRef.length !== 0
               ? itemsHeightRef.find((item) => item.index === index)?.height
               : 0
-          const offset = itemsHeightRef.slice(0, index).reduce((a, c) => a + c.height, 0)
-          return { length: length!, offset, index }
+          const offset = itemsHeightRef
+            .slice(0, index)
+            .reduce((a, c) => a + c.height + ITEM_SPACING * 2, 0)
+          return { length: length ?? 0, offset, index }
         }}
       />
     </View>
