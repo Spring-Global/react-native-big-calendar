@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import * as React from 'react'
-import { LayoutChangeEvent, Platform, SectionList, Text, View, ViewStyle } from 'react-native'
+import { Platform, SectionList, Text, View, ViewStyle } from 'react-native'
 
 import { u } from '../commonStyles'
 import { EventCellStyle, EventRenderer, ICalendarEvent } from '../interfaces'
@@ -9,11 +9,6 @@ import { isToday, typedMemo } from '../utils'
 import { CalendarEventForListView } from './CalendarEventForListView'
 
 const ITEM_SPACING = 12
-
-type ItemsHeight = {
-  index: number
-  height: number
-}
 
 type Event<T> = {
   dateString: string
@@ -53,8 +48,6 @@ function _CalendarBodyForListView<T>({
   const theme = useTheme()
 
   const sectionListRef = React.useRef<SectionList>(null)
-
-  const itemsHeightRef = React.useRef<ItemsHeight[]>([]).current
 
   const primaryBg = { backgroundColor: theme.palette.primary.main }
 
@@ -98,6 +91,7 @@ function _CalendarBodyForListView<T>({
       const eventGroupIndex = eventsGroupedByDay.findIndex(
         (group) => group.title === dayjs(scrollToDate).format('YYYY-MM'),
       )
+
       if (eventGroupIndex !== -1) {
         const eventIndex = eventsGroupedByDay[eventGroupIndex].data.findIndex(
           (event) => event.dateString === dayjs(scrollToDate).format('YYYY-MM-DD'),
@@ -107,7 +101,7 @@ function _CalendarBodyForListView<T>({
           setTimeout(() => {
             sectionListRef.current?.scrollToLocation({
               sectionIndex: eventGroupIndex,
-              itemIndex: eventIndex,
+              itemIndex: eventIndex + 1,
               animated: true,
             })
           }, 300)
@@ -116,22 +110,13 @@ function _CalendarBodyForListView<T>({
     }
   }, [eventsGroupedByDay, scrollToDate])
 
-  const onLayoutItem = (event: LayoutChangeEvent, index: number) => {
-    const height = event.nativeEvent.layout.height
-
-    itemsHeightRef.push({ index, height })
-  }
-
   const renderItem = (result: { item: Event<T>; index: number }) => {
     const dateString = result.item.dateString
     const date = dayjs(dateString)
     const _isToday = isToday(date)
 
     return (
-      <View
-        style={[u['flex-row'], { marginVertical: ITEM_SPACING }]}
-        onLayout={(event) => onLayoutItem(event, result.index)}
-      >
+      <View style={[u['flex-row'], { marginVertical: ITEM_SPACING }]}>
         <View style={{ width: 60 }}>
           <Text
             style={[
@@ -206,16 +191,6 @@ function _CalendarBodyForListView<T>({
         renderSectionHeader={({ section: { title } }) => (
           <Text style={[theme.typography.xl]}>{dayjs(title).format('MMM, YYYY')}</Text>
         )}
-        getItemLayout={(_, index) => {
-          const length =
-            itemsHeightRef.length !== 0
-              ? itemsHeightRef.find((item) => item.index === index)?.height
-              : 0
-          const offset = itemsHeightRef
-            .slice(0, index)
-            .reduce((a, c) => a + c.height + ITEM_SPACING * 2, 0)
-          return { length: length ?? 0, offset, index }
-        }}
       />
     </View>
   )
