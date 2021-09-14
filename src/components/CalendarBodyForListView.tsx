@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import * as React from 'react'
-import { Platform, SectionList, Text, View, ViewStyle } from 'react-native'
+import { Platform, SectionList, Text, TextStyle, View, ViewStyle } from 'react-native'
 
 import { u } from '../commonStyles'
 import { EventCellStyle, EventRenderer, ICalendarEvent } from '../interfaces'
@@ -32,6 +32,7 @@ interface CalendarBodyForMonthViewProps<T> {
   containerHeight: number
   onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined
   onEndReachedThreshold?: number | null | undefined
+  listMonthSectionTextStyle?: TextStyle
 }
 
 function _CalendarBodyForListView<T>({
@@ -44,6 +45,7 @@ function _CalendarBodyForListView<T>({
   containerHeight,
   onEndReached,
   onEndReachedThreshold = 0.1,
+  listMonthSectionTextStyle,
 }: CalendarBodyForMonthViewProps<T>) {
   const theme = useTheme()
 
@@ -188,9 +190,23 @@ function _CalendarBodyForListView<T>({
         onEndReachedThreshold={onEndReachedThreshold}
         showsVerticalScrollIndicator={false}
         sections={eventsGroupedByDay}
+        stickySectionHeadersEnabled
         renderSectionHeader={({ section: { title } }) => (
-          <Text style={[theme.typography.xl]}>{dayjs(title).format('MMM, YYYY')}</Text>
+          <View
+            style={{ width: '100%', backgroundColor: '#fff', paddingVertical: 8, paddingLeft: 16 }}
+          >
+            <Text style={[theme.typography.xl, { ...listMonthSectionTextStyle }]}>
+              {dayjs(title).format('MMM, YYYY')}
+            </Text>
+          </View>
         )}
+        onScrollToIndexFailed={() => {
+          sectionListRef.current?.scrollToLocation({
+            animated: false,
+            itemIndex: 0,
+            sectionIndex: 0,
+          })
+        }}
       />
     </View>
   )

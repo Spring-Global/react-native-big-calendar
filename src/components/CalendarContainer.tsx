@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
 import React from 'react'
-import { ViewStyle } from 'react-native'
+import { TextStyle, ViewStyle } from 'react-native'
 
 import { MIN_HEIGHT } from '../commonStyles'
 import {
@@ -54,6 +54,11 @@ export interface CalendarContainerProps<T> {
   headerContainerStyle?: ViewStyle
   bodyContainerStyle?: ViewStyle
 
+  /**
+   * Styles for the month section header on list visualization
+   */
+  listMonthSectionTextStyle?: TextStyle
+
   // Custom renderer
   renderEvent?: EventRenderer<T>
   renderHeader?: HeaderRenderer<T>
@@ -75,27 +80,31 @@ export interface CalendarContainerProps<T> {
   onPressEvent?: (event: ICalendarEvent<T>) => void
   weekEndsOn?: WeekNum
   maxVisibleEventCount?: number
+
   /**
    * Custom calendar row height.
    */
   cellHeight?: number
+
   /**
    * Calendar header row height.
    */
   headerCellHeight?: number
+
   /**
    * Scroll to especific date on list visualization mode.
    */
   scrollToDate?: Date
 
   /**
-   * Flatlist callback `onEndReached` for list visualization mode.
+   * SectionList callback `onEndReached` for list visualization mode.
    */
-  onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined
+  listOnEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined
+
   /**
-   * Flatlist callback `onEndReachedThreshold` for list visualization mode. Default: `0.1`
+   * SectionList callback `onEndReachedThreshold` for list visualization mode. Default: `0.1`
    */
-  onEndReachedThreshold?: number | null | undefined
+  listOnEndReachedThreshold?: number | null | undefined
 }
 
 dayjs.extend(isBetween)
@@ -128,6 +137,9 @@ function _CalendarContainer<T>({
   cellHeight,
   headerCellHeight,
   scrollToDate,
+  listMonthSectionTextStyle,
+  listOnEndReached,
+  listOnEndReachedThreshold,
 }: CalendarContainerProps<T>) {
   const [targetDate, setTargetDate] = React.useState(dayjs(date))
 
@@ -202,20 +214,21 @@ function _CalendarContainer<T>({
 
   if (mode === 'list') {
     return (
-      <React.Fragment>
-        <CalendarBodyForListView<T>
-          {...commonProps}
-          style={bodyContainerStyle}
-          events={daytimeEvents}
-          eventCellStyle={eventCellStyle}
-          ampm={ampm}
-          showTime={showTime}
-          onPressEvent={onPressEvent}
-          renderEvent={renderEvent}
-          containerHeight={height}
-          scrollToDate={scrollToDate}
-        />
-      </React.Fragment>
+      <CalendarBodyForListView<T>
+        {...commonProps}
+        style={bodyContainerStyle}
+        events={daytimeEvents}
+        eventCellStyle={eventCellStyle}
+        ampm={ampm}
+        showTime={showTime}
+        onPressEvent={onPressEvent}
+        renderEvent={renderEvent}
+        containerHeight={height}
+        scrollToDate={scrollToDate}
+        listMonthSectionTextStyle={listMonthSectionTextStyle}
+        onEndReached={listOnEndReached}
+        onEndReachedThreshold={listOnEndReachedThreshold}
+      />
     )
   }
 
