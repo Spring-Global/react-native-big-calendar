@@ -1,6 +1,14 @@
 import dayjs from 'dayjs'
 import * as React from 'react'
-import { Platform, SectionList, Text, TextStyle, View, ViewStyle } from 'react-native'
+import {
+  LayoutChangeEvent,
+  Platform,
+  SectionList,
+  Text,
+  TextStyle,
+  View,
+  ViewStyle,
+} from 'react-native'
 
 import { u } from '../commonStyles'
 import { EventCellStyle, EventRenderer, ICalendarEvent } from '../interfaces'
@@ -48,6 +56,7 @@ function _CalendarBodyForListView<T>({
   listMonthSectionTextStyle,
 }: CalendarBodyForMonthViewProps<T>) {
   const theme = useTheme()
+  const [headerHeight, setHeaderHeight] = React.useState(46)
 
   const sectionListRef = React.useRef<SectionList>(null)
 
@@ -111,6 +120,11 @@ function _CalendarBodyForListView<T>({
       }
     }
   }, [eventsGroupedByDay, scrollToDate])
+
+  const getHeaderHeight = (event: LayoutChangeEvent) => {
+    const height = event.nativeEvent.layout.height
+    setHeaderHeight(height)
+  }
 
   const renderItem = (result: { item: Event<T>; index: number }) => {
     const dateString = result.item.dateString
@@ -181,7 +195,7 @@ function _CalendarBodyForListView<T>({
   }
 
   return (
-    <View style={{ height: containerHeight }}>
+    <View style={{ height: containerHeight - headerHeight }}>
       <SectionList
         ref={sectionListRef}
         keyExtractor={(item, index) => item.dateString + index}
@@ -194,6 +208,7 @@ function _CalendarBodyForListView<T>({
         renderSectionHeader={({ section: { title } }) => (
           <View
             style={{ width: '100%', backgroundColor: '#fff', paddingVertical: 8, paddingLeft: 16 }}
+            onLayout={getHeaderHeight}
           >
             <Text style={[theme.typography.xl, { ...listMonthSectionTextStyle }]}>
               {dayjs(title).format('MMM, YYYY')}
