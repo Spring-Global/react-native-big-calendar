@@ -33,7 +33,7 @@ function _CalendarEventForListView<T>({
     injectedStyles: [
       { backgroundColor: theme.palette.primary.main },
       isRTL ? { right: 0 } : { left: 0 },
-      u['mt-2'],
+      u['mt-6'],
     ],
   })
 
