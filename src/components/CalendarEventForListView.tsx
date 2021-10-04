@@ -14,7 +14,11 @@ interface CalendarEventProps<T> {
   renderEvent?: EventRenderer<T>
   isRTL: boolean
   ampm: boolean
+  isOverlap: boolean
+  index: number
 }
+
+const OVERLAP_OFFSET = 20
 
 function _CalendarEventForListView<T>({
   event,
@@ -23,6 +27,8 @@ function _CalendarEventForListView<T>({
   renderEvent,
   isRTL,
   ampm,
+  isOverlap,
+  index,
 }: CalendarEventProps<T>) {
   const theme = useTheme()
 
@@ -31,9 +37,12 @@ function _CalendarEventForListView<T>({
     eventCellStyle,
     onPressEvent,
     injectedStyles: [
-      { backgroundColor: theme.palette.primary.main },
+      {
+        backgroundColor: theme.palette.primary.main,
+        marginLeft: isOverlap ? OVERLAP_OFFSET * index : 0,
+      },
       isRTL ? { right: 0 } : { left: 0 },
-      u['mt-6'],
+      isOverlap ? { marginTop: -6 } : u['mt-6'],
     ],
   })
 

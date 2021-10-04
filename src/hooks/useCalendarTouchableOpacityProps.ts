@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import React from 'react'
-import { ViewStyle } from 'react-native'
+import { GestureResponderEvent, ViewStyle } from 'react-native'
 
 import { eventCellCss } from '../commonStyles'
 import { CalendarTouchableOpacityProps, EventCellStyle, ICalendarEvent } from '../interfaces'
@@ -32,9 +32,12 @@ export function useCalendarTouchableOpacityProps<T>({
     [event],
   )
 
-  const _onPress = React.useCallback(() => {
-    onPressEvent && onPressEvent(plainJsEvent)
-  }, [onPressEvent, plainJsEvent])
+  const _onPress = React.useCallback(
+    (evt: GestureResponderEvent) => {
+      onPressEvent && onPressEvent({ ...evt, ...plainJsEvent })
+    },
+    [onPressEvent, plainJsEvent],
+  )
 
   const touchableOpacityProps: CalendarTouchableOpacityProps = {
     delayPressIn: 20,

@@ -126,10 +126,11 @@ function _CalendarBodyForListView<T>({
     setHeaderHeight(height)
   }
 
-  const renderItem = (result: { item: Event<T>; index: number }) => {
+  const renderItem = (result: { item: Event<T> }) => {
     const dateString = result.item.dateString
     const date = dayjs(dateString)
     const _isToday = isToday(date)
+    let overlapIndex = 0
 
     return (
       <View style={[u['flex-row'], { marginVertical: ITEM_SPACING }]}>
@@ -177,6 +178,20 @@ function _CalendarBodyForListView<T>({
 
         <View style={[u['flex-1']]}>
           {result.item.events.map((event: ICalendarEvent<T>, index: number) => {
+            let isOverlap = false
+            const itemsFiltered = result.item.events.filter(
+              (ev) => JSON.stringify(ev) !== JSON.stringify(event),
+            )
+            const overlapEvent = itemsFiltered.some(
+              (ev) =>
+                dayjs(ev.start).format('YYYY-MM-DDTHH:mm') ===
+                dayjs(event.start).format('YYYY-MM-DDTHH:mm'),
+            )
+            if (overlapEvent) {
+              isOverlap = true
+              overlapIndex++
+            }
+
             return (
               <CalendarEventForListView
                 key={index}
@@ -186,6 +201,8 @@ function _CalendarBodyForListView<T>({
                 eventCellStyle={eventCellStyle}
                 onPressEvent={onPressEvent}
                 renderEvent={renderEvent}
+                isOverlap={isOverlap}
+                index={overlapIndex}
               />
             )
           })}
