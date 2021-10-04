@@ -1,7 +1,15 @@
 import calendarize from 'calendarize'
 import dayjs from 'dayjs'
 import * as React from 'react'
-import { Platform, ScrollView, Text, TouchableOpacity, View, ViewStyle } from 'react-native'
+import {
+  LayoutChangeEvent,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native'
 
 import { u } from '../commonStyles'
 import { useNow } from '../hooks/useNow'
@@ -58,6 +66,11 @@ function _CalendarBodyForMonthView<T>({
   const minCellHeight = 190
   const theme = useTheme()
 
+  const onLayoutMonthView = React.useCallback(
+    ({ nativeEvent: { layout } }: LayoutChangeEvent) => setCalendarWidth(layout.width),
+    [],
+  )
+
   return (
     <View
       style={[
@@ -73,10 +86,15 @@ function _CalendarBodyForMonthView<T>({
         { borderColor: theme.palette.gray['200'] },
         style,
       ]}
-      onLayout={({ nativeEvent: { layout } }) => setCalendarWidth(layout.width)}
-      {...panResponder.panHandlers}
+      onLayout={onLayoutMonthView}
     >
-      <ScrollView style={{ height: containerHeight }}>
+      <ScrollView
+        style={u['flex-1']}
+        {...panResponder.panHandlers}
+        shouldRasterizeIOS
+        renderToHardwareTextureAndroid
+        showsVerticalScrollIndicator={false}
+      >
         {weeks.map((week, i) => (
           <View
             key={i}
@@ -124,14 +142,6 @@ function _CalendarBodyForMonthView<T>({
                   </Text>
                   {date &&
                     events
-                      .sort((a, b) => {
-                        if (dayjs(a.start).isSame(b.start, 'day')) {
-                          const aDuration = dayjs.duration(dayjs(a.end).diff(dayjs(a.start))).days()
-                          const bDuration = dayjs.duration(dayjs(b.end).diff(dayjs(b.start))).days()
-                          return bDuration - aDuration
-                        }
-                        return a.start.getTime() - b.start.getTime()
-                      })
                       .filter(({ start, end }) =>
                         date.isBetween(
                           dayjs(start).startOf('day'),
@@ -140,6 +150,14 @@ function _CalendarBodyForMonthView<T>({
                           '[)',
                         ),
                       )
+                      .sort((a, b) => {
+                        if (dayjs(a.start).isSame(b.start, 'day')) {
+                          const aDuration = dayjs.duration(dayjs(a.end).diff(dayjs(a.start))).days()
+                          const bDuration = dayjs.duration(dayjs(b.end).diff(dayjs(b.start))).days()
+                          return bDuration - aDuration
+                        }
+                        return a.start.getTime() - b.start.getTime()
+                      })
                       .reduce(
                         (elements, event, index, events) => [
                           ...elements,
