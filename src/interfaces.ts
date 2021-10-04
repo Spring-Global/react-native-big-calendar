@@ -1,5 +1,5 @@
 import { ReactElement } from 'react'
-import { RecursiveArray, ViewStyle } from 'react-native'
+import { GestureResponderEvent, RecursiveArray, ViewStyle } from 'react-native'
 
 import { CalendarHeaderProps } from './components/CalendarHeader'
 import { CalendarHeaderForMonthViewProps } from './components/CalendarHeaderForMonthView'
@@ -15,7 +15,7 @@ export type CalendarTouchableOpacityProps = {
   delayPressIn: number
   key: string
   style: RecursiveArray<ViewStyle | undefined> | ViewStyle
-  onPress: () => void
+  onPress: (evt: GestureResponderEvent) => void
   disabled: boolean
 }
 
