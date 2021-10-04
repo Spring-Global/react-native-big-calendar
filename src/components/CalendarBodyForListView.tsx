@@ -212,7 +212,7 @@ function _CalendarBodyForListView<T>({
   }
 
   return (
-    <View style={{ height: containerHeight - headerHeight }}>
+    <View style={Platform.OS === 'web' ? { height: containerHeight - headerHeight } : u['flex-1']}>
       <SectionList
         ref={sectionListRef}
         keyExtractor={(item, index) => item.dateString + index}
