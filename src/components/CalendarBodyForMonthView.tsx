@@ -74,9 +74,14 @@ function _CalendarBodyForMonthView<T>({
         style,
       ]}
       onLayout={({ nativeEvent: { layout } }) => setCalendarWidth(layout.width)}
-      {...panResponder.panHandlers}
     >
-      <ScrollView style={{ height: containerHeight }}>
+      <ScrollView
+        style={u['flex-1']}
+        {...panResponder.panHandlers}
+        shouldRasterizeIOS
+        renderToHardwareTextureAndroid
+        showsVerticalScrollIndicator={false}
+      >
         {weeks.map((week, i) => (
           <View
             key={i}
@@ -124,14 +129,6 @@ function _CalendarBodyForMonthView<T>({
                   </Text>
                   {date &&
                     events
-                      .sort((a, b) => {
-                        if (dayjs(a.start).isSame(b.start, 'day')) {
-                          const aDuration = dayjs.duration(dayjs(a.end).diff(dayjs(a.start))).days()
-                          const bDuration = dayjs.duration(dayjs(b.end).diff(dayjs(b.start))).days()
-                          return bDuration - aDuration
-                        }
-                        return a.start.getTime() - b.start.getTime()
-                      })
                       .filter(({ start, end }) =>
                         date.isBetween(
                           dayjs(start).startOf('day'),
@@ -140,6 +137,14 @@ function _CalendarBodyForMonthView<T>({
                           '[)',
                         ),
                       )
+                      .sort((a, b) => {
+                        if (dayjs(a.start).isSame(b.start, 'day')) {
+                          const aDuration = dayjs.duration(dayjs(a.end).diff(dayjs(a.start))).days()
+                          const bDuration = dayjs.duration(dayjs(b.end).diff(dayjs(b.start))).days()
+                          return bDuration - aDuration
+                        }
+                        return a.start.getTime() - b.start.getTime()
+                      })
                       .reduce(
                         (elements, event, index, events) => [
                           ...elements,
