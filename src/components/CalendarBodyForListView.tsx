@@ -130,7 +130,7 @@ function _CalendarBodyForListView<T>({
     const dateString = result.item.dateString
     const date = dayjs(dateString)
     const _isToday = isToday(date)
-    let overlapIndex = 0
+    let overlapIndex = -1
 
     return (
       <View style={[u['flex-row'], { marginVertical: ITEM_SPACING }]}>

@@ -42,7 +42,7 @@ function _CalendarEventForListView<T>({
         marginLeft: isOverlap ? OVERLAP_OFFSET * index : 0,
       },
       isRTL ? { right: 0 } : { left: 0 },
-      isOverlap ? { marginTop: -6 } : u['mt-6'],
+      isOverlap && index !== 0 ? { marginTop: -6 } : u['mt-6'],
     ],
   })
 
