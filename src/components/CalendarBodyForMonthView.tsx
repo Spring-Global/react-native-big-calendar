@@ -1,7 +1,15 @@
 import calendarize from 'calendarize'
 import dayjs from 'dayjs'
 import * as React from 'react'
-import { Platform, ScrollView, Text, TouchableOpacity, View, ViewStyle } from 'react-native'
+import {
+  LayoutChangeEvent,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native'
 
 import { u } from '../commonStyles'
 import { useNow } from '../hooks/useNow'
@@ -58,6 +66,11 @@ function _CalendarBodyForMonthView<T>({
   const minCellHeight = 190
   const theme = useTheme()
 
+  const onLayoutMonthView = React.useCallback(
+    ({ nativeEvent: { layout } }: LayoutChangeEvent) => setCalendarWidth(layout.width),
+    [],
+  )
+
   return (
     <View
       style={[
@@ -73,7 +86,7 @@ function _CalendarBodyForMonthView<T>({
         { borderColor: theme.palette.gray['200'] },
         style,
       ]}
-      onLayout={({ nativeEvent: { layout } }) => setCalendarWidth(layout.width)}
+      onLayout={onLayoutMonthView}
     >
       <ScrollView
         style={u['flex-1']}
