@@ -1,7 +1,7 @@
 // We don't use Material UI, but this theme structure is inspired by the theme.
 //
 // https://material-ui.com/customization/default-theme/#default-theme
-import { TextStyle } from 'react-native'
+import { TextStyle, ViewStyle } from 'react-native'
 
 import { DeepPartial } from '../utility-types'
 
@@ -42,6 +42,13 @@ export interface ThemeInterface {
     xl: Typography
   }
   eventCellOverlappings: readonly Palette[]
+  customStyles: {
+    dateHeaderText?: TextStyle
+    dateHeaderTodayText?: TextStyle
+    dateHeaderTodayContainer?: ViewStyle
+    dateHeaderDayText?: TextStyle
+    dateHeaderTodayDayText?: TextStyle
+  }
 }
 
 export type PartialTheme = DeepPartial<ThemeInterface>

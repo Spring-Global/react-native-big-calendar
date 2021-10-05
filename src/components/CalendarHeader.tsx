@@ -61,6 +61,11 @@ function _CalendarHeader<T>({
                   theme.typography.xs,
                   u['text-center'],
                   { color: _isToday ? theme.palette.primary.main : theme.palette.gray['500'] },
+                  {
+                    ...(_isToday
+                      ? theme.customStyles?.dateHeaderTodayDayText
+                      : theme.customStyles?.dateHeaderDayText),
+                  },
                 ]}
               >
                 {date.format('ddd')}
@@ -78,6 +83,7 @@ function _CalendarHeader<T>({
                         u['justify-center'],
                         u['self-center'],
                         u['z-20'],
+                        theme.customStyles?.dateHeaderTodayContainer,
                       ]
                     : [u['mb-6']]
                 }
@@ -92,6 +98,11 @@ function _CalendarHeader<T>({
                     theme.typography.xl,
                     u['text-center'],
                     Platform.OS === 'web' && _isToday && u['mt-6'],
+                    {
+                      ...(_isToday
+                        ? theme.customStyles?.dateHeaderTodayText
+                        : theme.customStyles?.dateHeaderText),
+                    },
                   ]}
                 >
                   {date.format('D')}
