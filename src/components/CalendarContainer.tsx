@@ -105,6 +105,16 @@ export interface CalendarContainerProps<T> {
    * SectionList callback `onEndReachedThreshold` for list visualization mode. Default: `0.1`
    */
   listOnEndReachedThreshold?: number | null | undefined
+
+  /**
+   * Return the current section title for list visualization mode.
+   */
+  listGetCurrentSection?: (currentSection: string) => void
+
+  /**
+   * Enable the sticky headers on list visualization SectionList. Default: true
+   */
+  listStickySectionHeadersEnabled?: boolean
 }
 
 dayjs.extend(isBetween)
@@ -140,6 +150,8 @@ function _CalendarContainer<T>({
   listMonthSectionTextStyle,
   listOnEndReached,
   listOnEndReachedThreshold,
+  listGetCurrentSection,
+  listStickySectionHeadersEnabled,
 }: CalendarContainerProps<T>) {
   const [targetDate, setTargetDate] = React.useState(dayjs(date))
 
@@ -228,6 +240,8 @@ function _CalendarContainer<T>({
         listMonthSectionTextStyle={listMonthSectionTextStyle}
         onEndReached={listOnEndReached}
         onEndReachedThreshold={listOnEndReachedThreshold}
+        listGetCurrentSection={listGetCurrentSection}
+        listStickySectionHeadersEnabled={listStickySectionHeadersEnabled}
       />
     )
   }
