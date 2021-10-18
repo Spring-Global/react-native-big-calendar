@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import * as React from 'react'
-import { Alert, Platform, ScrollView, StyleSheet, View, ViewStyle } from 'react-native'
+import { Platform, ScrollView, StyleSheet, View, ViewStyle } from 'react-native'
 
 import { u } from '../commonStyles'
 import { useNow } from '../hooks/useNow'
@@ -67,7 +67,7 @@ function _CalendarBody<T>({
   const { now } = useNow(!hideNowIndicator)
 
   React.useEffect(() => {
-    if (scrollView.current && scrollOffsetMinutes && Platform.OS !== 'ios') {
+    if (scrollView.current && scrollOffsetMinutes) {
       // We add delay here to work correct on React Native
       // see: https://stackoverflow.com/questions/33208477/react-native-android-scrollview-scrollto-not-working
       setTimeout(
