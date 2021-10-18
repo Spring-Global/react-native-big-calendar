@@ -3,19 +3,18 @@ import { Text, TouchableOpacity } from 'react-native'
 
 import { u } from '../commonStyles'
 import { useCalendarTouchableOpacityProps } from '../hooks/useCalendarTouchableOpacityProps'
-import { EventCellStyle, EventRenderer, ICalendarEvent } from '../interfaces'
+import { EventCellStyle, EventRenderer } from '../interfaces'
 import { useTheme } from '../theme/ThemeContext'
 import { formatStartEnd, typedMemo } from '../utils'
+import { ListCalendarEvent } from './CalendarBodyForListView'
 
 interface CalendarEventProps<T> {
-  event: ICalendarEvent<T>
-  onPressEvent?: (event: ICalendarEvent<T>) => void
+  event: ListCalendarEvent<T>
+  onPressEvent?: (event: ListCalendarEvent<T>) => void
   eventCellStyle?: EventCellStyle<T>
   renderEvent?: EventRenderer<T>
   isRTL: boolean
   ampm: boolean
-  isOverlap: boolean
-  index: number
 }
 
 const OVERLAP_OFFSET = 20
@@ -27,8 +26,6 @@ function _CalendarEventForListView<T>({
   renderEvent,
   isRTL,
   ampm,
-  isOverlap,
-  index,
 }: CalendarEventProps<T>) {
   const theme = useTheme()
 
@@ -39,10 +36,10 @@ function _CalendarEventForListView<T>({
     injectedStyles: [
       {
         backgroundColor: theme.palette.primary.main,
-        marginLeft: isOverlap ? OVERLAP_OFFSET * index : 0,
+        marginLeft: event.isOverlap ? OVERLAP_OFFSET * (event.overlapIndex ?? 0) : 0,
       },
       isRTL ? { right: 0 } : { left: 0 },
-      isOverlap && index !== 0 ? { marginTop: -6 } : u['mt-6'],
+      event.isOverlap && event.overlapIndex !== 0 ? { marginTop: -6 } : u['mt-6'],
     ],
   })
 
