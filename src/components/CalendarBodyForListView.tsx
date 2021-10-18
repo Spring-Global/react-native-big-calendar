@@ -1,7 +1,6 @@
 import dayjs from 'dayjs'
 import * as React from 'react'
 import {
-  DefaultSectionT,
   LayoutChangeEvent,
   Platform,
   SectionList,
@@ -21,9 +20,14 @@ import { CalendarEventForListView } from './CalendarEventForListView'
 
 const ITEM_SPACING = 12
 
+export type ListCalendarEvent<T> = ICalendarEvent<T> & {
+  isOverlap?: boolean
+  overlapIndex?: number
+}
+
 type Event<T> = {
   dateString: string
-  events: ICalendarEvent<T>[]
+  events: ListCalendarEvent<T>[]
 }
 
 type EventGroup<T> = {
@@ -32,7 +36,7 @@ type EventGroup<T> = {
 }
 
 interface CalendarBodyForMonthViewProps<T> {
-  events: ICalendarEvent<T>[]
+  events: ListCalendarEvent<T>[]
   ampm: boolean
   showTime: boolean
   style: ViewStyle
@@ -65,7 +69,9 @@ function _CalendarBodyForListView<T>({
   const theme = useTheme()
   const [headerHeight, setHeaderHeight] = React.useState(46)
 
-  const sectionListRef = React.useRef<SectionList>(null)
+  const sectionListRef = React.useRef<SectionList<Event<T>>>(null)
+
+  let lastOverlapIndex = React.useRef(1)
 
   // Group events by month, and then by date
   const eventsGroupedByDay = React.useMemo(
@@ -85,15 +91,26 @@ function _CalendarBodyForListView<T>({
             elements.push(element)
           }
 
-          let groupEvent = element.data.find(
+          const groupEvent = element.data.find(
             (el) => el.dateString === eventDate.format('YYYY-MM-DD'),
           )
 
           if (!groupEvent) {
             const data: Event<T> = { dateString: eventDate.format('YYYY-MM-DD'), events: [] }
+            lastOverlapIndex.current = 1
             data.events.push(event)
             element.data.push(data)
           } else {
+            if (
+              groupEvent.events.some((ev) => dayjs(ev.start).isSame(dayjs(event.start), 'minute'))
+            ) {
+              event.isOverlap = true
+              event.overlapIndex = lastOverlapIndex.current
+              lastOverlapIndex.current++
+            } else {
+              event.isOverlap = false
+              lastOverlapIndex.current = 1
+            }
             groupEvent.events.push(event)
           }
 
@@ -143,7 +160,7 @@ function _CalendarBodyForListView<T>({
     setHeaderHeight(height)
   }, [])
 
-  const renderSectionHeader = (info: { section: SectionListData<Event<T>, DefaultSectionT> }) => {
+  const renderSectionHeader = (info: { section: SectionListData<Event<T>> }) => {
     return (
       <View
         style={{ width: '100%', backgroundColor: '#fff', paddingVertical: 8, paddingLeft: 16 }}
@@ -161,7 +178,6 @@ function _CalendarBodyForListView<T>({
       const dateString = result.item.dateString
       const date = dayjs(dateString)
       const _isToday = isToday(date)
-      let overlapIndex = -1
 
       return (
         <View style={[u['flex-row'], { marginVertical: ITEM_SPACING }]}>
@@ -223,23 +239,7 @@ function _CalendarBodyForListView<T>({
           </View>
 
           <View style={[u['flex-1']]}>
-            {result.item.events.map((event: ICalendarEvent<T>, index: number) => {
-              let isOverlap = false
-              const itemsFiltered = result.item.events.filter(
-                (ev) => JSON.stringify(ev) !== JSON.stringify(event),
-              )
-              const overlapEvent = itemsFiltered.some(
-                (ev) =>
-                  dayjs(ev.start).format('YYYY-MM-DDTHH:mm') ===
-                  dayjs(event.start).format('YYYY-MM-DDTHH:mm'),
-              )
-              if (overlapEvent) {
-                isOverlap = true
-                overlapIndex++
-              } else {
-                overlapIndex = -1
-              }
-
+            {result.item.events.map((event: ListCalendarEvent<T>, index: number) => {
               return (
                 <CalendarEventForListView
                   key={index}
@@ -249,8 +249,6 @@ function _CalendarBodyForListView<T>({
                   eventCellStyle={eventCellStyle}
                   onPressEvent={onPressEvent}
                   renderEvent={renderEvent}
-                  isOverlap={isOverlap}
-                  index={overlapIndex}
                 />
               )
             })}
@@ -289,7 +287,10 @@ function _CalendarBodyForListView<T>({
         sections={eventsGroupedByDay}
         stickySectionHeadersEnabled={listStickySectionHeadersEnabled}
         renderSectionHeader={renderSectionHeader}
+        ItemSeparatorComponent={() => <View />}
+        SectionSeparatorComponent={() => <View />}
         onViewableItemsChanged={onCheckViewableItems}
+        bounces={false}
         viewabilityConfig={{
           itemVisiblePercentThreshold: 10,
         }}
