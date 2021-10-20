@@ -36,6 +36,14 @@ function _CalendarHeader<T>({
   const borderColor = { borderColor: theme.palette.gray['200'] }
   const primaryBg = { backgroundColor: theme.palette.primary.main }
 
+  const hasAllDayEventOnDateRange = React.useMemo(
+    () =>
+      allDayEvents.some((event) =>
+        dayjs(event.start).isBetween(dateRange[0], dateRange[dateRange.length - 1]),
+      ),
+    [allDayEvents, dateRange],
+  )
+
   return (
     <View
       style={[
@@ -109,34 +117,36 @@ function _CalendarHeader<T>({
                 </Text>
               </View>
             </View>
-            <View
-              style={[
-                u['border-l'],
-                { borderColor: theme.palette.gray['200'] },
-                { height: headerCellHeight ?? cellHeight },
-              ]}
-            >
-              {allDayEvents.map((event) => {
-                if (!dayjs(event.start).isSame(date, 'day')) {
-                  return null
-                }
-                return (
-                  <View
-                    style={[eventCellCss.style, primaryBg]}
-                    key={`${event.start}${event.title}`}
-                  >
-                    <Text
-                      style={{
-                        fontSize: theme.typography.sm.fontSize,
-                        color: theme.palette.primary.contrastText,
-                      }}
+            {hasAllDayEventOnDateRange && (
+              <View
+                style={[
+                  u['border-l'],
+                  { borderColor: theme.palette.gray['200'] },
+                  { height: headerCellHeight ?? cellHeight },
+                ]}
+              >
+                {allDayEvents.map((event) => {
+                  if (!dayjs(event.start).isSame(date, 'day')) {
+                    return null
+                  }
+                  return (
+                    <View
+                      style={[eventCellCss.style, primaryBg]}
+                      key={`${event.start}${event.title}`}
                     >
-                      {event.title}
-                    </Text>
-                  </View>
-                )
-              })}
-            </View>
+                      <Text
+                        style={{
+                          fontSize: theme.typography.sm.fontSize,
+                          color: theme.palette.primary.contrastText,
+                        }}
+                      >
+                        {event.title}
+                      </Text>
+                    </View>
+                  )
+                })}
+              </View>
+            )}
           </TouchableOpacity>
         )
       })}
