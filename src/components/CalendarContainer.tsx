@@ -32,11 +32,11 @@ import { CalendarBodyForMonthView } from './CalendarBodyForMonthView'
 import { CalendarHeader } from './CalendarHeader'
 import { CalendarHeaderForMonthView } from './CalendarHeaderForMonthView'
 
-export interface CalendarContainerProps<T> {
+export interface CalendarContainerProps {
   /**
    * Events to be rendered. This is a required prop.
    */
-  events: ICalendarEvent<T>[]
+  events: ICalendarEvent[]
 
   /**
    * The height of calendar component. This is a required prop.
@@ -49,7 +49,7 @@ export interface CalendarContainerProps<T> {
   overlapOffset?: number
 
   // Custom style
-  eventCellStyle?: EventCellStyle<T>
+  eventCellStyle?: EventCellStyle
   calendarContainerStyle?: ViewStyle
   headerContainerStyle?: ViewStyle
   bodyContainerStyle?: ViewStyle
@@ -60,8 +60,8 @@ export interface CalendarContainerProps<T> {
   listMonthSectionTextStyle?: TextStyle
 
   // Custom renderer
-  renderEvent?: EventRenderer<T>
-  renderHeader?: HeaderRenderer<T>
+  renderEvent?: EventRenderer
+  renderHeader?: HeaderRenderer
   renderHeaderForMonthView?: MonthHeaderRenderer
 
   ampm?: boolean
@@ -77,7 +77,7 @@ export interface CalendarContainerProps<T> {
   onChangeDate?: DateRangeHandler
   onPressCell?: (date: Date) => void
   onPressDateHeader?: (date: Date) => void
-  onPressEvent?: (event: ICalendarEvent<T>) => void
+  onPressEvent?: (event: ICalendarEvent) => void
   weekEndsOn?: WeekNum
   maxVisibleEventCount?: number
 
@@ -119,7 +119,7 @@ export interface CalendarContainerProps<T> {
 
 dayjs.extend(isBetween)
 
-function _CalendarContainer<T>({
+function _CalendarContainer({
   events,
   height,
   ampm = false,
@@ -152,14 +152,8 @@ function _CalendarContainer<T>({
   listOnEndReachedThreshold,
   listGetCurrentSection,
   listStickySectionHeadersEnabled,
-}: CalendarContainerProps<T>) {
-  const [targetDate, setTargetDate] = React.useState(dayjs(date))
-
-  React.useEffect(() => {
-    if (date) {
-      setTargetDate(dayjs(date))
-    }
-  }, [date])
+}: CalendarContainerProps) {
+  const targetDate = dayjs(date)
 
   const allDayEvents = React.useMemo(
     () => events.filter((event) => isAllDayEvent(event.start, event.end)),
@@ -203,21 +197,19 @@ function _CalendarContainer<T>({
     [height, cellHeight],
   )
 
-  const theme = useTheme()
-
-  const onSwipeHorizontal = React.useCallback(
-    (direction: HorizontalDirection) => {
-      if (!swipeEnabled) {
-        return
-      }
-      if ((direction === 'LEFT' && !theme.isRTL) || (direction === 'RIGHT' && theme.isRTL)) {
-        setTargetDate(targetDate.add(modeToNum(mode, targetDate), 'day'))
-      } else {
-        setTargetDate(targetDate.add(modeToNum(mode, targetDate) * -1, 'day'))
-      }
-    },
-    [swipeEnabled, targetDate, mode, theme.isRTL],
-  )
+  // const onSwipeHorizontal = React.useCallback(
+  //   (direction: HorizontalDirection) => {
+  //     if (!swipeEnabled) {
+  //       return
+  //     }
+  //     if ((direction === 'LEFT' && !theme.isRTL) || (direction === 'RIGHT' && theme.isRTL)) {
+  //       setTargetDate(targetDate.add(modeToNum(mode, targetDate), 'day'))
+  //     } else {
+  //       setTargetDate(targetDate.add(modeToNum(mode, targetDate) * -1, 'day'))
+  //     }
+  //   },
+  //   [swipeEnabled, targetDate, mode, theme.isRTL],
+  // )
 
   const commonProps = {
     cellHeight: _cellHeight,
@@ -227,7 +219,7 @@ function _CalendarContainer<T>({
 
   if (mode === 'list') {
     return (
-      <CalendarBodyForListView<T>
+      <CalendarBodyForListView
         {...commonProps}
         style={bodyContainerStyle}
         events={daytimeEvents}
@@ -256,7 +248,7 @@ function _CalendarContainer<T>({
     return (
       <React.Fragment>
         <HeaderComponentForMonthView {...headerProps} />
-        <CalendarBodyForMonthView<T>
+        <CalendarBodyForMonthView
           {...commonProps}
           style={bodyContainerStyle}
           containerHeight={height}
@@ -266,7 +258,7 @@ function _CalendarContainer<T>({
           hideNowIndicator={hideNowIndicator}
           onPressCell={onPressCell}
           onPressEvent={onPressEvent}
-          onSwipeHorizontal={onSwipeHorizontal}
+          onSwipeHorizontal={undefined}
           renderEvent={renderEvent}
           targetDate={targetDate}
           maxVisibleEventCount={maxVisibleEventCount}
@@ -299,11 +291,24 @@ function _CalendarContainer<T>({
         showTime={showTime}
         onPressCell={onPressCell}
         onPressEvent={onPressEvent}
-        onSwipeHorizontal={onSwipeHorizontal}
+        onSwipeHorizontal={undefined}
         renderEvent={renderEvent}
       />
     </React.Fragment>
   )
 }
 
-export const CalendarContainer = typedMemo(_CalendarContainer)
+const areEqual = (prev: CalendarContainerProps, next: CalendarContainerProps) => {
+  if (prev.date?.getTime() !== next.date?.getTime()) {
+    return false
+  }
+  if (JSON.stringify(prev.events) !== JSON.stringify(next.events)) {
+    return false
+  }
+  if (prev.mode !== next.mode) {
+    return false
+  }
+  return true
+}
+
+export const CalendarContainer = React.memo(_CalendarContainer, areEqual)

@@ -8,18 +8,18 @@ import { EventCellStyle, EventRenderer, ICalendarEvent } from '../interfaces'
 import { useTheme } from '../theme/ThemeContext'
 import { getEventSpanningInfo, typedMemo } from '../utils'
 
-interface CalendarEventProps<T> {
-  event: ICalendarEvent<T>
-  onPressEvent?: (event: ICalendarEvent<T>) => void
-  eventCellStyle?: EventCellStyle<T>
-  renderEvent?: EventRenderer<T>
+interface CalendarEventProps {
+  event: ICalendarEvent
+  onPressEvent?: (event: ICalendarEvent) => void
+  eventCellStyle?: EventCellStyle
+  renderEvent?: EventRenderer
   date: dayjs.Dayjs
   dayOfTheWeek: number
   calendarWidth: number
   isRTL: boolean
 }
 
-function _CalendarEventForMonthView<T>({
+function _CalendarEventForMonthView({
   event,
   onPressEvent,
   eventCellStyle,
@@ -28,7 +28,7 @@ function _CalendarEventForMonthView<T>({
   dayOfTheWeek,
   calendarWidth,
   isRTL,
-}: CalendarEventProps<T>) {
+}: CalendarEventProps) {
   const theme = useTheme()
 
   const { eventWidth, isMultipleDays, isMultipleDaysStart, eventWeekDuration } = React.useMemo(
@@ -57,6 +57,7 @@ function _CalendarEventForMonthView<T>({
   if (renderEvent) {
     return renderEvent(event, touchableOpacityProps)
   }
+  console.log('Event rendered', dayjs(event.start).format('DD/MM/YYYY'))
 
   return (
     <View style={{ minHeight: 22 }}>
@@ -80,4 +81,23 @@ function _CalendarEventForMonthView<T>({
   )
 }
 
-export const CalendarEventForMonthView = typedMemo(_CalendarEventForMonthView)
+const areEqual = (prev: CalendarEventProps, next: CalendarEventProps) => {
+  if (!prev.date.isSame(next.date)) {
+    return false
+  }
+  if (JSON.stringify(prev.event) !== JSON.stringify(next.event)) {
+    return false
+  }
+  if (prev.dayOfTheWeek !== next.dayOfTheWeek) {
+    return false
+  }
+  if (prev.onPressEvent !== next.onPressEvent) {
+    return false
+  }
+  if (prev.renderEvent !== next.renderEvent) {
+    return false
+  }
+  return true
+}
+
+export const CalendarEventForMonthView = React.memo(_CalendarEventForMonthView, areEqual)

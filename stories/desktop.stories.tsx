@@ -29,7 +29,7 @@ storiesOf('showcase - Desktop', module)
       <Calendar
         height={SCREEN_HEIGHT}
         events={events}
-        onPressEvent={(event) => alert(event.title)}
+        onPressEvent={React.useCallback((event) => alert(event.title), [])}
         onPressCell={() => void 0}
         mode="list"
       />
@@ -40,7 +40,7 @@ storiesOf('showcase - Desktop', module)
       <Calendar
         height={SCREEN_HEIGHT}
         events={events}
-        onPressEvent={(event) => alert(event.title)}
+        onPressEvent={React.useCallback((event) => alert(event.title), [])}
         onPressCell={() => void 0}
         mode="day"
       />
@@ -51,7 +51,7 @@ storiesOf('showcase - Desktop', module)
       <Calendar
         height={SCREEN_HEIGHT}
         events={events}
-        onPressEvent={(event) => alert(event.title)}
+        onPressEvent={React.useCallback((event) => alert(event.title), [])}
         onPressCell={() => void 0}
         mode="3days"
       />
@@ -64,7 +64,7 @@ storiesOf('showcase - Desktop', module)
         <Calendar
           height={SCREEN_HEIGHT}
           events={state.events}
-          onPressEvent={(event) => alert(event.title)}
+          onPressEvent={React.useCallback((event) => alert(event.title), [])}
           onPressCell={state.addEvent}
         />
       </View>
@@ -85,7 +85,7 @@ storiesOf('showcase - Desktop', module)
               title: 'This is sooooo long name event which will be truncated',
             },
           ]}
-          onPressEvent={(event) => alert(event.title)}
+          onPressEvent={React.useCallback((event) => alert(event.title), [])}
           onPressCell={state.addEvent}
         />
       </View>

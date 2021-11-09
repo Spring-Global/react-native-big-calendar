@@ -1,6 +1,6 @@
 {
   "name": "@spring-global/react-native-big-calendar",
-  "version": "2.1.4",
+  "version": "2.1.17",
   "main": "build/index.js",
   "jsnext:main": "build/index.es.js",
   "module": "build/index.es.js",
@@ -28,9 +28,12 @@
     "build:ts": "env NODE_ENV=production rollup -c"
   },
   "dependencies": {
+    "@welldone-software/why-did-you-render": "^6.2.1",
     "calendarize": "^1.1.1",
     "dayjs": "^1.10.6",
-    "merge-anything": "^4.0.1"
+    "merge-anything": "^4.0.1",
+    "react-native-big-list": "^1.4.3",
+    "recyclerlistview": "^3.0.5"
   },
   "peerDependencies": {
     "react": "^16.8.3"

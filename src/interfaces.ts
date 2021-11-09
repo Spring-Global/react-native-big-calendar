@@ -23,7 +23,7 @@ export type ICalendarEvent<T = {}> = ICalendarEventBase & T
 
 export type Mode = '3days' | 'week' | 'day' | 'custom' | 'month' | 'list'
 
-export type EventCellStyle<T> = ViewStyle | ((event: ICalendarEvent<T>) => ViewStyle)
+export type EventCellStyle = ViewStyle | ((event: ICalendarEvent) => ViewStyle)
 
 export type WeekNum = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
@@ -33,12 +33,12 @@ export type DateRangeHandler = ([start, end]: HasDateRange) => void
 
 export type HorizontalDirection = 'RIGHT' | 'LEFT'
 
-export type EventRenderer<T> = (
-  event: ICalendarEvent<T>,
+export type EventRenderer = (
+  event: ICalendarEvent,
   touchableOpacityProps: CalendarTouchableOpacityProps,
 ) => JSX.Element
 
-export type HeaderRenderer<T> = React.ComponentType<CalendarHeaderProps<T> & { mode: Mode }>
+export type HeaderRenderer = React.ComponentType<CalendarHeaderProps & { mode: Mode }>
 export type MonthHeaderRenderer = React.ComponentType<CalendarHeaderForMonthViewProps>
 
 /**

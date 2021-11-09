@@ -55,4 +55,11 @@ function _CalendarHeaderForMonthView({
   )
 }
 
-export const CalendarHeaderForMonthView = typedMemo(_CalendarHeaderForMonthView)
+const areEqual = (prev: CalendarHeaderForMonthViewProps, next: CalendarHeaderForMonthViewProps) => {
+  if (JSON.stringify(prev.style) !== JSON.stringify(next.style)) {
+    return false
+  }
+  return true
+}
+
+export const CalendarHeaderForMonthView = React.memo(_CalendarHeaderForMonthView, areEqual)

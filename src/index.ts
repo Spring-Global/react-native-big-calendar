@@ -5,6 +5,12 @@ import { Calendar } from './components/Calendar'
 
 dayjs.extend(duration)
 
+// declare module "react" {
+//   function memo<A, B>(
+//     Component: (props: A) => B
+//   ): (props: A) => React.ReactNode | null
+// }
+
 export * from './components/Calendar'
 export * from './components/CalendarBody'
 export * from './components/CalendarBodyForMonthView'

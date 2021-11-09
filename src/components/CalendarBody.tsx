@@ -132,15 +132,23 @@ function _CalendarBody<T>({
         {...(Platform.OS === 'web' ? panResponder.panHandlers : {})}
       >
         <View style={[u['z-20'], u['w-50']]}>
-          {hours.map((hour) => (
-            <HourGuideColumn key={hour} cellHeight={cellHeight} hour={hour} ampm={ampm} />
+          {hours.map((hour, index) => (
+            <HourGuideColumn
+              key={`hourColumn_${hour}_${index}`}
+              cellHeight={cellHeight}
+              hour={hour}
+              ampm={ampm}
+            />
           ))}
         </View>
-        {dateRange.map((date) => (
-          <View style={[u['flex-1'], u['overflow-hidden']]} key={date.toString()}>
-            {hours.map((hour) => (
+        {dateRange.map((date, i) => (
+          <View
+            style={[u['flex-1'], u['overflow-hidden']]}
+            key={`dateRangeView_${date.toString()}_${i}`}
+          >
+            {hours.map((hour, index) => (
               <HourGuideCell
-                key={hour}
+                key={`hourCell_${hour}_${index}`}
                 cellHeight={cellHeight}
                 date={date}
                 hour={hour}
