@@ -7,7 +7,7 @@ import { CalendarTouchableOpacityProps, EventCellStyle, ICalendarEvent } from '.
 
 interface UseCalendarTouchableOpacityPropsProps<T> {
   event: ICalendarEvent<T>
-  eventCellStyle?: EventCellStyle<T>
+  eventCellStyle?: EventCellStyle
   onPressEvent?: (e: ICalendarEvent<T>) => void
   injectedStyles?: ViewStyle[]
 }

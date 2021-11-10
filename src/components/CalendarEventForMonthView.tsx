@@ -57,7 +57,6 @@ function _CalendarEventForMonthView({
   if (renderEvent) {
     return renderEvent(event, touchableOpacityProps)
   }
-  console.log('Event rendered', dayjs(event.start).format('DD/MM/YYYY'))
 
   return (
     <View style={{ minHeight: 22 }}>

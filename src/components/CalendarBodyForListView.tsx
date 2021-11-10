@@ -11,7 +11,6 @@ import {
   ViewStyle,
   ViewToken,
 } from 'react-native'
-import BigList from 'react-native-big-list'
 
 import { u } from '../commonStyles'
 import { EventCellStyle, EventRenderer, ICalendarEvent } from '../interfaces'
@@ -19,35 +18,31 @@ import { useTheme } from '../theme/ThemeContext'
 import { isToday, typedMemo } from '../utils'
 import { CalendarEventForListView } from './CalendarEventForListView'
 
-const weekOfYear = require('dayjs/plugin/weekOfYear')
-
-dayjs.extend(weekOfYear)
-
 const ITEM_SPACING = 12
 
-export type ListCalendarEvent<T> = ICalendarEvent<T> & {
+export type ListCalendarEvent = ICalendarEvent & {
   isOverlap?: boolean
   overlapIndex?: number
 }
 
-type Event<T> = {
+type Event = {
   dateString: string
-  events: ListCalendarEvent<T>[]
+  events: ListCalendarEvent[]
 }
 
-type EventGroup<T> = {
+type EventGroup = {
   title: string
-  data: Event<T>[]
+  data: Event[]
 }
 
-interface CalendarBodyForMonthViewProps<T> {
-  events: ListCalendarEvent<T>[]
+interface CalendarBodyForMonthViewProps {
+  events: ListCalendarEvent[]
   ampm: boolean
   showTime: boolean
   style: ViewStyle
-  eventCellStyle?: EventCellStyle<T>
-  onPressEvent?: (event: ICalendarEvent<T>) => void
-  renderEvent?: EventRenderer<T>
+  eventCellStyle?: EventCellStyle
+  onPressEvent?: (event: ICalendarEvent) => void
+  renderEvent?: EventRenderer
   scrollToDate?: Date
   containerHeight: number
   onEndReached?: ((info: { distanceFromEnd: number }) => void) | null | undefined
@@ -57,7 +52,7 @@ interface CalendarBodyForMonthViewProps<T> {
   listStickySectionHeadersEnabled?: boolean
 }
 
-function _CalendarBodyForListView<T>({
+function _CalendarBodyForListView({
   events,
   onPressEvent,
   eventCellStyle,
@@ -70,34 +65,12 @@ function _CalendarBodyForListView<T>({
   listMonthSectionTextStyle,
   listGetCurrentSection,
   listStickySectionHeadersEnabled = true,
-}: CalendarBodyForMonthViewProps<T>) {
+}: CalendarBodyForMonthViewProps) {
   const theme = useTheme()
-  const [headerHeight, setHeaderHeight] = React.useState(46)
 
-  const sectionListRef = React.useRef<BigList<Event<T>>>(null)
+  const sectionListRef = React.useRef<SectionList<Event>>(null)
 
   let lastOverlapIndex = React.useRef(1)
-
-  console.log('events', events)
-
-  const teste = events.reduce((acc, event) => {
-    // create a composed key: 'year-week'
-    const yearWeek = `${dayjs(event.start).year()}-${dayjs(event.start).month()}-${dayjs(
-      event.start,
-    ).date()}`
-
-    // add this key as a property to the result object
-    if (!acc[yearWeek]) {
-      acc[yearWeek] = []
-    }
-
-    // push the current date that belongs to the year-week calculated befor
-    acc[yearWeek].push(event)
-
-    return acc
-  }, [] as Event<T>[][])
-
-  console.log('Teste', teste)
 
   // Group events by month, and then by date
   const eventsGroupedByDay = React.useMemo(
@@ -108,7 +81,6 @@ function _CalendarBodyForListView<T>({
         })
         .reduce((elements, event) => {
           const eventDate = dayjs(event.start)
-
           let element = elements.find((item) => item.title === eventDate.format('YYYY-MM'))
 
           if (!element) {
@@ -123,7 +95,7 @@ function _CalendarBodyForListView<T>({
           )
 
           if (!groupEvent) {
-            const data: Event<T> = { dateString: eventDate.format('YYYY-MM-DD'), events: [] }
+            const data: Event = { dateString: eventDate.format('YYYY-MM-DD'), events: [] }
             lastOverlapIndex.current = 1
             data.events.push(event)
             element.data.push(data)
@@ -142,7 +114,7 @@ function _CalendarBodyForListView<T>({
           }
 
           return elements
-        }, [] as EventGroup<T>[]),
+        }, [] as EventGroup[]),
     [events],
   )
 
@@ -182,21 +154,21 @@ function _CalendarBodyForListView<T>({
     [listGetCurrentSection],
   )
 
-  const renderSectionHeader = (section: number) => {
+  const renderSectionHeader = (info: { section: SectionListData<Event> }) => {
     return (
       <View style={{ width: '100%', backgroundColor: '#fff', paddingVertical: 8, paddingLeft: 16 }}>
-        <Text style={[theme.typography.xl, { ...listMonthSectionTextStyle }]}>{section}</Text>
+        <Text style={[theme.typography.xl, { ...listMonthSectionTextStyle }]}>
+          {dayjs(info.section.title).format('MMM, YYYY')}
+        </Text>
       </View>
     )
   }
 
   const renderItem = React.useCallback(
-    (result: { item: Event<T> }) => {
+    (result: { item: Event }) => {
       const dateString = result.item.dateString
       const date = dayjs(dateString)
       const _isToday = isToday(date)
-
-      console.log(result)
 
       return (
         <View style={[u['flex-row'], { marginVertical: ITEM_SPACING }]}>
@@ -258,7 +230,7 @@ function _CalendarBodyForListView<T>({
           </View>
 
           <View style={[u['flex-1']]}>
-            {/* {result.item.events.map((event: ListCalendarEvent<T>, index: number) => {
+            {result.item.events.map((event: ListCalendarEvent, index: number) => {
               return (
                 <CalendarEventForListView
                   key={index}
@@ -270,17 +242,22 @@ function _CalendarBodyForListView<T>({
                   renderEvent={renderEvent}
                 />
               )
-            })} */}
+            })}
           </View>
         </View>
       )
     },
     [
+      ampm,
+      eventCellStyle,
+      onPressEvent,
+      renderEvent,
       theme.customStyles?.dateHeaderDayText,
       theme.customStyles?.dateHeaderText,
       theme.customStyles?.dateHeaderTodayContainer,
       theme.customStyles?.dateHeaderTodayDayText,
       theme.customStyles?.dateHeaderTodayText,
+      theme.isRTL,
       theme.palette.gray,
       theme.palette.primary.contrastText,
       theme.palette.primary.main,
@@ -289,19 +266,55 @@ function _CalendarBodyForListView<T>({
     ],
   )
 
+  const ItemSeparatorComponent = React.useCallback(() => <View />, [])
+
+  const SectionSeparatorComponent = React.useCallback(() => <View />, [])
+
   return (
-    <View style={Platform.OS === 'web' ? { height: containerHeight - headerHeight } : u['flex-1']}>
-      <BigList
-        sections={teste}
+    <View style={Platform.OS === 'web' ? { height: containerHeight } : u['flex-1']}>
+      <SectionList
+        ref={sectionListRef}
+        keyExtractor={(item, index) => item.dateString + index}
         renderItem={renderItem}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={onEndReachedThreshold}
+        showsVerticalScrollIndicator={false}
+        sections={eventsGroupedByDay}
+        stickySectionHeadersEnabled={listStickySectionHeadersEnabled}
         renderSectionHeader={renderSectionHeader}
-        itemHeight={50}
-        headerHeight={90}
-        stickySectionHeadersEnabled
-        sectionHeaderHeight={90} // Required to show section header
+        ItemSeparatorComponent={ItemSeparatorComponent}
+        SectionSeparatorComponent={SectionSeparatorComponent}
+        onViewableItemsChanged={onCheckViewableItems}
+        bounces={false}
+        windowSize={5}
+        initialNumToRender={5}
+        maxToRenderPerBatch={20}
+        viewabilityConfig={{
+          itemVisiblePercentThreshold: 10,
+        }}
+        onScrollToIndexFailed={() => {
+          sectionListRef.current?.scrollToLocation({
+            animated: false,
+            itemIndex: 0,
+            sectionIndex: 0,
+          })
+        }}
       />
     </View>
   )
 }
 
-export const CalendarBodyForListView = typedMemo(_CalendarBodyForListView)
+const areEqual = (prev: CalendarBodyForMonthViewProps, next: CalendarBodyForMonthViewProps) => {
+  if (JSON.stringify(prev.events) !== JSON.stringify(next.events)) {
+    return false
+  }
+  if (prev.containerHeight !== next.containerHeight) {
+    return false
+  }
+  if (prev.listStickySectionHeadersEnabled !== next.listStickySectionHeadersEnabled) {
+    return false
+  }
+  return true
+}
+
+export const CalendarBodyForListView = React.memo(_CalendarBodyForListView, areEqual)
