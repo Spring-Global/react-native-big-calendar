@@ -36,6 +36,14 @@ function _CalendarHeader<T>({
   const borderColor = { borderColor: theme.palette.gray['200'] }
   const primaryBg = { backgroundColor: theme.palette.primary.main }
 
+  const hasAllDayEventOnDateRange = React.useMemo(
+    () =>
+      allDayEvents.some((event) =>
+        dayjs(event.start).isBetween(dateRange[0], dateRange[dateRange.length - 1]),
+      ),
+    [allDayEvents, dateRange],
+  )
+
   return (
     <View
       style={[
@@ -46,7 +54,7 @@ function _CalendarHeader<T>({
       ]}
     >
       <View style={[u['z-10'], u['w-50'], borderColor]} />
-      {dateRange.map((date) => {
+      {dateRange.map((date, index) => {
         const _isToday = isToday(date)
         return (
           <TouchableOpacity
@@ -55,88 +63,108 @@ function _CalendarHeader<T>({
             disabled={onPressDateHeader === undefined}
             key={date.toString()}
           >
-            <View style={[u['justify-between'], { height: headerCellHeight ?? cellHeight }]}>
-              <Text
-                style={[
-                  theme.typography.xs,
-                  u['text-center'],
-                  { color: _isToday ? theme.palette.primary.main : theme.palette.gray['500'] },
-                  {
-                    ...(_isToday
-                      ? theme.customStyles?.dateHeaderTodayDayText
-                      : theme.customStyles?.dateHeaderDayText),
-                  },
-                ]}
-              >
-                {date.format('ddd')}
-              </Text>
+            <View style={{ alignItems: 'stretch' }}>
               <View
-                style={
-                  _isToday
-                    ? [
-                        primaryBg,
-                        u['h-36'],
-                        u['w-36'],
-                        u['pb-6'],
-                        u['rounded-full'],
-                        u['items-center'],
-                        u['justify-center'],
-                        u['self-center'],
-                        u['z-20'],
-                        theme.customStyles?.dateHeaderTodayContainer,
-                      ]
-                    : [u['mb-6']]
-                }
+                style={[
+                  u['border-t'],
+                  theme.isRTL && index > 0 ? u['border-l'] : u['border-r'],
+                  !theme.isRTL && index > 0 ? u['border-r'] : u['border-l'],
+                  borderColor,
+                  { paddingVertical: 8 },
+                ]}
               >
                 <Text
                   style={[
-                    {
-                      color: _isToday
-                        ? theme.palette.primary.contrastText
-                        : theme.palette.gray['800'],
-                    },
-                    theme.typography.xl,
+                    theme.typography.xs,
                     u['text-center'],
-                    Platform.OS === 'web' && _isToday && u['mt-6'],
+                    { color: _isToday ? theme.palette.primary.main : theme.palette.gray['500'] },
                     {
                       ...(_isToday
-                        ? theme.customStyles?.dateHeaderTodayText
-                        : theme.customStyles?.dateHeaderText),
+                        ? theme.customStyles?.dateHeaderTodayDayText
+                        : theme.customStyles?.dateHeaderDayText),
                     },
                   ]}
                 >
-                  {date.format('D')}
+                  {date.format('ddd')}
                 </Text>
               </View>
-            </View>
-            <View
-              style={[
-                u['border-l'],
-                { borderColor: theme.palette.gray['200'] },
-                { height: headerCellHeight ?? cellHeight },
-              ]}
-            >
-              {allDayEvents.map((event) => {
-                if (!dayjs(event.start).isSame(date, 'day')) {
-                  return null
-                }
-                return (
-                  <View
-                    style={[eventCellCss.style, primaryBg]}
-                    key={`${event.start}${event.title}`}
+              <View
+                style={[
+                  u['border-t'],
+                  theme.isRTL && index > 0 ? u['border-l'] : u['border-r'],
+                  !theme.isRTL && index > 0 ? u['border-r'] : u['border-l'],
+                  borderColor,
+                  { paddingVertical: 8 },
+                ]}
+              >
+                <View
+                  style={
+                    _isToday
+                      ? [
+                          primaryBg,
+                          u['rounded-full'],
+                          u['items-center'],
+                          u['justify-center'],
+                          u['self-center'],
+                          u['z-20'],
+                          { width: 30, height: 30, borderRadius: 15 },
+                          borderColor,
+                          theme.customStyles?.dateHeaderTodayContainer,
+                        ]
+                      : {}
+                  }
+                >
+                  <Text
+                    style={[
+                      {
+                        color: _isToday
+                          ? theme.palette.primary.contrastText
+                          : theme.palette.gray['800'],
+                      },
+                      _isToday ? { fontSize: 16 } : theme.typography.xl,
+                      u['text-center'],
+                      {
+                        ...(_isToday
+                          ? theme.customStyles?.dateHeaderTodayText
+                          : theme.customStyles?.dateHeaderText),
+                      },
+                    ]}
                   >
-                    <Text
-                      style={{
-                        fontSize: theme.typography.sm.fontSize,
-                        color: theme.palette.primary.contrastText,
-                      }}
-                    >
-                      {event.title}
-                    </Text>
-                  </View>
-                )
-              })}
+                    {date.format('D')}
+                  </Text>
+                </View>
+              </View>
             </View>
+            {hasAllDayEventOnDateRange && (
+              <View
+                style={[
+                  u['border-l'],
+                  { borderColor: theme.palette.gray['200'] },
+                  { height: headerCellHeight ?? cellHeight },
+                ]}
+              >
+                {allDayEvents.map((event) => {
+                  if (!dayjs(event.start).isSame(date, 'day')) {
+                    return null
+                  }
+                  return (
+                    <View
+                      style={[eventCellCss.style, primaryBg]}
+                      key={`${event.start}${event.title}`}
+                    >
+                      <Text
+                        style={{
+                          fontSize: theme.typography.sm.fontSize,
+                          color: theme.palette.primary.contrastText,
+                        }}
+                      >
+                        {event.title}
+                      </Text>
+                    </View>
+                  )
+                })}
+              </View>
+            )}
           </TouchableOpacity>
         )
       })}
