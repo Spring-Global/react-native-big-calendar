@@ -48,6 +48,7 @@ export interface ThemeInterface {
     dateHeaderTodayContainer?: ViewStyle
     dateHeaderDayText?: TextStyle
     dateHeaderTodayDayText?: TextStyle
+    monthHeaderLandscapeText?: TextStyle
   }
 }
 
