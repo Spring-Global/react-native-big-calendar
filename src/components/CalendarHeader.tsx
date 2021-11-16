@@ -13,6 +13,7 @@ export interface CalendarHeaderProps<T> {
   headerCellHeight?: number
   style: ViewStyle
   allDayEvents: ICalendarEvent<T>[]
+  showMonthOnHeader?: boolean
   onPressDateHeader?: (date: Date) => void
 }
 
@@ -23,6 +24,7 @@ function _CalendarHeader<T>({
   allDayEvents,
   onPressDateHeader,
   headerCellHeight,
+  showMonthOnHeader,
 }: CalendarHeaderProps<T>) {
   const _onPress = React.useCallback(
     (date: Date) => {
@@ -44,6 +46,8 @@ function _CalendarHeader<T>({
     [allDayEvents, dateRange],
   )
 
+  const currentMonth = dayjs(dateRange[0]).format('MMM')
+
   return (
     <View
       style={[
@@ -53,8 +57,20 @@ function _CalendarHeader<T>({
         style,
       ]}
     >
-      <View style={[u['z-10'], u['w-50'], borderColor]} />
-      {dateRange.map((date) => {
+      <View style={[u['z-10'], u['w-50'], borderColor, u['items-center'], u['justify-center']]}>
+        {showMonthOnHeader && (
+          <Text
+            style={[
+              theme.typography.xl,
+              { fontWeight: '600' },
+              theme.customStyles?.monthHeaderLandscapeText,
+            ]}
+          >
+            {currentMonth}
+          </Text>
+        )}
+      </View>
+      {dateRange.map((date, index) => {
         const _isToday = isToday(date)
         return (
           <TouchableOpacity
@@ -63,58 +79,76 @@ function _CalendarHeader<T>({
             disabled={onPressDateHeader === undefined}
             key={date.toString()}
           >
-            <View style={[u['justify-between'], { height: headerCellHeight ?? cellHeight }]}>
-              <Text
-                style={[
-                  theme.typography.xs,
-                  u['text-center'],
-                  { color: _isToday ? theme.palette.primary.main : theme.palette.gray['500'] },
-                  {
-                    ...(_isToday
-                      ? theme.customStyles?.dateHeaderTodayDayText
-                      : theme.customStyles?.dateHeaderDayText),
-                  },
-                ]}
-              >
-                {date.format('ddd')}
-              </Text>
+            <View style={{ alignItems: 'stretch' }}>
               <View
-                style={
-                  _isToday
-                    ? [
-                        primaryBg,
-                        u['h-36'],
-                        u['w-36'],
-                        u['pb-6'],
-                        u['rounded-full'],
-                        u['items-center'],
-                        u['justify-center'],
-                        u['self-center'],
-                        u['z-20'],
-                        theme.customStyles?.dateHeaderTodayContainer,
-                      ]
-                    : [u['mb-6']]
-                }
+                style={[
+                  u['border-t'],
+                  theme.isRTL && index > 0 ? u['border-l'] : u['border-r'],
+                  !theme.isRTL && index > 0 ? u['border-r'] : u['border-l'],
+                  borderColor,
+                  { paddingVertical: 8 },
+                ]}
               >
                 <Text
                   style={[
-                    {
-                      color: _isToday
-                        ? theme.palette.primary.contrastText
-                        : theme.palette.gray['800'],
-                    },
-                    theme.typography.xl,
+                    theme.typography.xs,
                     u['text-center'],
-                    Platform.OS === 'web' && _isToday && u['mt-6'],
+                    { color: _isToday ? theme.palette.primary.main : theme.palette.gray['500'] },
                     {
                       ...(_isToday
-                        ? theme.customStyles?.dateHeaderTodayText
-                        : theme.customStyles?.dateHeaderText),
+                        ? theme.customStyles?.dateHeaderTodayDayText
+                        : theme.customStyles?.dateHeaderDayText),
                     },
                   ]}
                 >
-                  {date.format('D')}
+                  {date.format('ddd')}
                 </Text>
+              </View>
+              <View
+                style={[
+                  u['border-t'],
+                  theme.isRTL && index > 0 ? u['border-l'] : u['border-r'],
+                  !theme.isRTL && index > 0 ? u['border-r'] : u['border-l'],
+                  borderColor,
+                  { paddingVertical: 8 },
+                ]}
+              >
+                <View
+                  style={
+                    _isToday
+                      ? [
+                          primaryBg,
+                          u['rounded-full'],
+                          u['items-center'],
+                          u['justify-center'],
+                          u['self-center'],
+                          u['z-20'],
+                          { width: 30, height: 30, borderRadius: 15 },
+                          borderColor,
+                          theme.customStyles?.dateHeaderTodayContainer,
+                        ]
+                      : {}
+                  }
+                >
+                  <Text
+                    style={[
+                      {
+                        color: _isToday
+                          ? theme.palette.primary.contrastText
+                          : theme.palette.gray['800'],
+                      },
+                      _isToday ? { fontSize: 16 } : theme.typography.xl,
+                      u['text-center'],
+                      {
+                        ...(_isToday
+                          ? theme.customStyles?.dateHeaderTodayText
+                          : theme.customStyles?.dateHeaderText),
+                      },
+                    ]}
+                  >
+                    {date.format('D')}
+                  </Text>
+                </View>
               </View>
             </View>
             {hasAllDayEventOnDateRange && (

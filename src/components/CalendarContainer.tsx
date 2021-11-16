@@ -115,6 +115,11 @@ export interface CalendarContainerProps<T> {
    * Enable the sticky headers on list visualization SectionList. Default: true
    */
   listStickySectionHeadersEnabled?: boolean
+
+  /**
+   * If enabled the current month text will be shown on the header.
+   */
+  showMonthOnHeader?: boolean
 }
 
 dayjs.extend(isBetween)
@@ -152,6 +157,7 @@ function _CalendarContainer<T>({
   listOnEndReachedThreshold,
   listGetCurrentSection,
   listStickySectionHeadersEnabled,
+  showMonthOnHeader,
 }: CalendarContainerProps<T>) {
   const [targetDate, setTargetDate] = React.useState(dayjs(date))
 
@@ -285,7 +291,7 @@ function _CalendarContainer<T>({
 
   return (
     <React.Fragment>
-      <HeaderComponent {...headerProps} />
+      <HeaderComponent showMonthOnHeader={showMonthOnHeader} {...headerProps} />
       <CalendarBody
         {...commonProps}
         style={bodyContainerStyle}
