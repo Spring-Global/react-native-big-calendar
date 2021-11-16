@@ -7,17 +7,17 @@ import { ICalendarEvent } from '../interfaces'
 import { useTheme } from '../theme/ThemeContext'
 import { isToday, typedMemo } from '../utils'
 
-export interface CalendarHeaderProps<T> {
+export interface CalendarHeaderProps {
   dateRange: dayjs.Dayjs[]
   cellHeight: number
   headerCellHeight?: number
   style: ViewStyle
-  allDayEvents: ICalendarEvent<T>[]
+  allDayEvents: ICalendarEvent[]
   showMonthOnHeader?: boolean
   onPressDateHeader?: (date: Date) => void
 }
 
-function _CalendarHeader<T>({
+function _CalendarHeader({
   dateRange,
   cellHeight,
   style,
@@ -25,7 +25,7 @@ function _CalendarHeader<T>({
   onPressDateHeader,
   headerCellHeight,
   showMonthOnHeader,
-}: CalendarHeaderProps<T>) {
+}: CalendarHeaderProps) {
   const _onPress = React.useCallback(
     (date: Date) => {
       onPressDateHeader && onPressDateHeader(date)

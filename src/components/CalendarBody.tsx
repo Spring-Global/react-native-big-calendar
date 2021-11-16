@@ -37,13 +37,13 @@ interface CalendarBodyProps<T> {
   ampm: boolean
   showTime: boolean
   style: ViewStyle
-  eventCellStyle?: EventCellStyle<T>
+  eventCellStyle?: EventCellStyle
   hideNowIndicator?: boolean
   overlapOffset?: number
   onPressCell?: (date: Date) => void
   onPressEvent?: (event: ICalendarEvent<T>) => void
   onSwipeHorizontal?: (d: HorizontalDirection) => void
-  renderEvent?: EventRenderer<T>
+  renderEvent?: EventRenderer
 }
 
 function _CalendarBody<T>({
@@ -67,7 +67,7 @@ function _CalendarBody<T>({
   const { now } = useNow(!hideNowIndicator)
 
   React.useEffect(() => {
-    if (scrollView.current && scrollOffsetMinutes) {
+    if (scrollView.current && scrollOffsetMinutes != null) {
       // We add delay here to work correct on React Native
       // see: https://stackoverflow.com/questions/33208477/react-native-android-scrollview-scrollto-not-working
       setTimeout(

@@ -74,7 +74,7 @@ export interface CalendarContainerProps {
 
   swipeEnabled?: boolean
   weekStartsOn?: WeekNum
-  onChangeDate?: DateRangeHandler
+  onChangeDate?: (date: Date) => void
   onPressCell?: (date: Date) => void
   onPressDateHeader?: (date: Date) => void
   onPressEvent?: (event: ICalendarEvent) => void
@@ -159,7 +159,16 @@ function _CalendarContainer({
   listStickySectionHeadersEnabled,
   showMonthOnHeader,
 }: CalendarContainerProps) {
-  const targetDate = dayjs(date)
+  const theme = useTheme()
+  const [targetDate, setTargetDate] = React.useState(dayjs(date))
+
+  React.useEffect(() => {
+    if (date && !dayjs(date).isSame(targetDate, 'date')) {
+      const newDate = dayjs(date)
+      setTargetDate(newDate)
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [date])
 
   const allDayEvents = React.useMemo(
     () => events.filter((event) => isAllDayEvent(event.start, event.end)),
@@ -191,31 +200,33 @@ function _CalendarContainer({
     }
   }, [mode, targetDate, locale, weekEndsOn, weekStartsOn])
 
-  React.useEffect(() => {
-    if (onChangeDate) {
-      onChangeDate([dateRange[0].toDate(), dateRange.slice(-1)[0].toDate()])
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(dateRange), onChangeDate])
-
   const _cellHeight = React.useMemo(
     () => (cellHeight ? cellHeight : Math.max(height - 30, MIN_HEIGHT) / 24),
     [height, cellHeight],
   )
 
-  // const onSwipeHorizontal = React.useCallback(
-  //   (direction: HorizontalDirection) => {
-  //     if (!swipeEnabled) {
-  //       return
-  //     }
-  //     if ((direction === 'LEFT' && !theme.isRTL) || (direction === 'RIGHT' && theme.isRTL)) {
-  //       setTargetDate(targetDate.add(modeToNum(mode, targetDate), 'day'))
-  //     } else {
-  //       setTargetDate(targetDate.add(modeToNum(mode, targetDate) * -1, 'day'))
-  //     }
-  //   },
-  //   [swipeEnabled, targetDate, mode, theme.isRTL],
-  // )
+  const onSwipeHorizontal = React.useCallback(
+    (direction: HorizontalDirection) => {
+      if (!swipeEnabled) {
+        return
+      }
+      let newTargetDate
+      if ((direction === 'LEFT' && !theme.isRTL) || (direction === 'RIGHT' && theme.isRTL)) {
+        newTargetDate = targetDate.add(modeToNum(mode, targetDate), 'day')
+        setTargetDate(newTargetDate)
+        if (onChangeDate) {
+          onChangeDate(newTargetDate.toDate())
+        }
+      } else {
+        newTargetDate = targetDate.add(modeToNum(mode, targetDate) * -1, 'day')
+        setTargetDate(newTargetDate)
+        if (onChangeDate) {
+          onChangeDate(newTargetDate.toDate())
+        }
+      }
+    },
+    [swipeEnabled, theme.isRTL, targetDate, mode, onChangeDate],
+  )
 
   const commonProps = {
     cellHeight: _cellHeight,
@@ -264,7 +275,7 @@ function _CalendarContainer({
           hideNowIndicator={hideNowIndicator}
           onPressCell={onPressCell}
           onPressEvent={onPressEvent}
-          onSwipeHorizontal={undefined}
+          onSwipeHorizontal={onSwipeHorizontal}
           renderEvent={renderEvent}
           targetDate={targetDate}
           maxVisibleEventCount={maxVisibleEventCount}
@@ -297,7 +308,7 @@ function _CalendarContainer({
         showTime={showTime}
         onPressCell={onPressCell}
         onPressEvent={onPressEvent}
-        onSwipeHorizontal={undefined}
+        onSwipeHorizontal={onSwipeHorizontal}
         renderEvent={renderEvent}
       />
     </React.Fragment>
@@ -312,6 +323,15 @@ const areEqual = (prev: CalendarContainerProps, next: CalendarContainerProps) =>
     return false
   }
   if (prev.mode !== next.mode) {
+    return false
+  }
+  if (prev.scrollOffsetMinutes !== next.scrollOffsetMinutes) {
+    return false
+  }
+  if (prev.showMonthOnHeader !== next.showMonthOnHeader) {
+    return false
+  }
+  if (prev.height !== next.height) {
     return false
   }
   return true

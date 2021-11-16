@@ -20,12 +20,12 @@ const getEventCellPositionStyle = (start: Date, end: Date) => {
 interface CalendarEventProps<T> {
   event: ICalendarEvent<T>
   onPressEvent?: (event: ICalendarEvent<T>) => void
-  eventCellStyle?: EventCellStyle<T>
+  eventCellStyle?: EventCellStyle
   showTime: boolean
   eventCount?: number
   eventOrder?: number
   overlapOffset?: number
-  renderEvent?: EventRenderer<T>
+  renderEvent?: EventRenderer
   ampm: boolean
 }
 

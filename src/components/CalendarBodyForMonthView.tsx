@@ -1,15 +1,7 @@
 import calendarize from 'calendarize'
 import dayjs from 'dayjs'
 import * as React from 'react'
-import {
-  LayoutChangeEvent,
-  Platform,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from 'react-native'
+import { Platform, ScrollView, Text, TouchableOpacity, View, ViewStyle } from 'react-native'
 
 import { u } from '../commonStyles'
 import { useNow } from '../hooks/useNow'
@@ -22,7 +14,6 @@ import {
   WeekNum,
 } from '../interfaces'
 import { useTheme } from '../theme/ThemeContext'
-import { typedMemo } from '../utils'
 import { CalendarEventForMonthView } from './CalendarEventForMonthView'
 
 interface CalendarBodyForMonthViewProps {
@@ -61,37 +52,43 @@ function _CalendarBodyForMonthView({
   const minCellHeight = 190
   const theme = useTheme()
 
-  const weeksWithEvents = weeksCalendarized.map((week) => {
-    const weekWithEvents = week.map((w) => {
-      if (w === 0) {
-        return null
-      }
-
-      const eventDate = dayjs(targetDate).set('date', w)
-
-      const dayEvents = events
-        .filter(({ start, end }) =>
-          eventDate.isBetween(dayjs(start).startOf('day'), dayjs(end).endOf('day')),
-        )
-        .sort((a, b) => {
-          if (dayjs(a.start).isSame(b.start, 'day')) {
-            const aDuration = dayjs.duration(dayjs(a.end).diff(dayjs(a.start))).days()
-            const bDuration = dayjs.duration(dayjs(b.end).diff(dayjs(b.start))).days()
-            return bDuration - aDuration
-          }
-          return a.start.getTime() - b.start.getTime()
-        })
-
-      return {
-        day: eventDate,
-        events: dayEvents,
-      }
-    })
-
-    return weekWithEvents
+  const panResponder = usePanResponder({
+    onSwipeHorizontal,
   })
 
-  console.log('weeksWithEvents', weeksWithEvents)
+  const weeksWithEvents = React.useMemo(
+    () =>
+      weeksCalendarized.map((week) => {
+        const weekWithEvents = week.map((w) => {
+          if (w === 0) {
+            return null
+          }
+
+          const eventDate = dayjs(targetDate).set('date', w)
+
+          const dayEvents = events
+            .filter(({ start, end }) =>
+              eventDate.isBetween(dayjs(start).startOf('day'), dayjs(end).endOf('day')),
+            )
+            .sort((a, b) => {
+              if (dayjs(a.start).isSame(b.start, 'day')) {
+                const aDuration = dayjs.duration(dayjs(a.end).diff(dayjs(a.start))).days()
+                const bDuration = dayjs.duration(dayjs(b.end).diff(dayjs(b.start))).days()
+                return bDuration - aDuration
+              }
+              return a.start.getTime() - b.start.getTime()
+            })
+
+          return {
+            day: eventDate,
+            events: dayEvents,
+          }
+        })
+
+        return weekWithEvents
+      }),
+    [events, targetDate, weeksCalendarized],
+  )
 
   return (
     <View
@@ -108,6 +105,7 @@ function _CalendarBodyForMonthView({
         { borderColor: theme.palette.gray['200'] },
         style,
       ]}
+      {...(Platform.OS !== 'web' ? panResponder.panHandlers : {})}
     >
       <ScrollView
         style={u['flex-1']}
