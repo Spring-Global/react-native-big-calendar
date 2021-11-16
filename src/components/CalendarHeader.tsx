@@ -13,6 +13,7 @@ export interface CalendarHeaderProps<T> {
   headerCellHeight?: number
   style: ViewStyle
   allDayEvents: ICalendarEvent<T>[]
+  showMonthOnHeader?: boolean
   onPressDateHeader?: (date: Date) => void
 }
 
@@ -23,6 +24,7 @@ function _CalendarHeader<T>({
   allDayEvents,
   onPressDateHeader,
   headerCellHeight,
+  showMonthOnHeader,
 }: CalendarHeaderProps<T>) {
   const _onPress = React.useCallback(
     (date: Date) => {
@@ -44,6 +46,8 @@ function _CalendarHeader<T>({
     [allDayEvents, dateRange],
   )
 
+  const currentMonth = dayjs(dateRange[0]).format('MMM')
+
   return (
     <View
       style={[
@@ -53,7 +57,19 @@ function _CalendarHeader<T>({
         style,
       ]}
     >
-      <View style={[u['z-10'], u['w-50'], borderColor]} />
+      <View style={[u['z-10'], u['w-50'], borderColor, u['items-center'], u['justify-center']]}>
+        {showMonthOnHeader && (
+          <Text
+            style={[
+              theme.typography.xl,
+              { fontWeight: '600' },
+              theme.customStyles?.monthHeaderLandscapeText,
+            ]}
+          >
+            {currentMonth}
+          </Text>
+        )}
+      </View>
       {dateRange.map((date, index) => {
         const _isToday = isToday(date)
         return (

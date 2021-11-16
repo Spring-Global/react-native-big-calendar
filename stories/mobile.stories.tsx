@@ -18,6 +18,7 @@ function alert(input: any) {
 }
 
 const MOBILE_HEIGHT = 736
+const MOBILE_LANDSCAPE_HEIGHT = 414
 
 storiesOf('showcase - Mobile', module)
   .add('day mode', () => (
@@ -105,5 +106,10 @@ storiesOf('showcase - Mobile', module)
         weekStartsOn={1}
         weekEndsOn={5}
       />
+    </View>
+  ))
+  .add('landscape', () => (
+    <View style={[styles.mobile, { height: MOBILE_LANDSCAPE_HEIGHT, width: MOBILE_HEIGHT }]}>
+      <Calendar height={MOBILE_LANDSCAPE_HEIGHT} events={events} />
     </View>
   ))
