@@ -157,6 +157,7 @@ function _CalendarContainer({
   listOnEndReachedThreshold,
   listGetCurrentSection,
   listStickySectionHeadersEnabled,
+  showMonthOnHeader,
 }: CalendarContainerProps) {
   const targetDate = dayjs(date)
 
