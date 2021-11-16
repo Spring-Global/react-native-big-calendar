@@ -201,7 +201,8 @@ function _CalendarContainer<T>({
     if (onChangeDate) {
       onChangeDate([dateRange[0].toDate(), dateRange.slice(-1)[0].toDate()])
     }
-  }, [dateRange, onChangeDate])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(dateRange), onChangeDate])
 
   const _cellHeight = React.useMemo(
     () => (cellHeight ? cellHeight : Math.max(height - 30, MIN_HEIGHT) / 24),
