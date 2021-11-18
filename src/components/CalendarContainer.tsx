@@ -5,7 +5,6 @@ import { TextStyle, ViewStyle } from 'react-native'
 
 import { MIN_HEIGHT } from '../commonStyles'
 import {
-  DateRangeHandler,
   EventCellStyle,
   EventRenderer,
   HeaderRenderer,
@@ -74,7 +73,7 @@ export interface CalendarContainerProps<T> {
 
   swipeEnabled?: boolean
   weekStartsOn?: WeekNum
-  onChangeDate?: DateRangeHandler
+  onChangeDate?: (date: Date) => void
   onPressCell?: (date: Date) => void
   onPressDateHeader?: (date: Date) => void
   onPressEvent?: (event: ICalendarEvent<T>) => void
@@ -159,13 +158,7 @@ function _CalendarContainer<T>({
   listStickySectionHeadersEnabled,
   showMonthOnHeader,
 }: CalendarContainerProps<T>) {
-  const [targetDate, setTargetDate] = React.useState(dayjs(date))
-
-  React.useEffect(() => {
-    if (date) {
-      setTargetDate(dayjs(date))
-    }
-  }, [date])
+  const targetDate = dayjs(date)
 
   const allDayEvents = React.useMemo(
     () => events.filter((event) => isAllDayEvent(event.start, event.end)),
@@ -197,13 +190,6 @@ function _CalendarContainer<T>({
     }
   }, [mode, targetDate, locale, weekEndsOn, weekStartsOn])
 
-  React.useEffect(() => {
-    if (onChangeDate) {
-      onChangeDate([dateRange[0].toDate(), dateRange.slice(-1)[0].toDate()])
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(dateRange), onChangeDate])
-
   const _cellHeight = React.useMemo(
     () => (cellHeight ? cellHeight : Math.max(height - 30, MIN_HEIGHT) / 24),
     [height, cellHeight],
@@ -216,13 +202,15 @@ function _CalendarContainer<T>({
       if (!swipeEnabled) {
         return
       }
-      if ((direction === 'LEFT' && !theme.isRTL) || (direction === 'RIGHT' && theme.isRTL)) {
-        setTargetDate(targetDate.add(modeToNum(mode, targetDate), 'day'))
-      } else {
-        setTargetDate(targetDate.add(modeToNum(mode, targetDate) * -1, 'day'))
+      if (onChangeDate) {
+        if ((direction === 'LEFT' && !theme.isRTL) || (direction === 'RIGHT' && theme.isRTL)) {
+          onChangeDate(targetDate.add(modeToNum(mode, targetDate), 'day').toDate())
+        } else {
+          onChangeDate(targetDate.add(modeToNum(mode, targetDate) * -1, 'day').toDate())
+        }
       }
     },
-    [swipeEnabled, targetDate, mode, theme.isRTL],
+    [swipeEnabled, onChangeDate, theme.isRTL, targetDate, mode],
   )
 
   const commonProps = {
