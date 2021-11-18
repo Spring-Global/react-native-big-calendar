@@ -70,7 +70,7 @@ function _CalendarBody<T>({
     if (scrollView.current && scrollOffsetMinutes) {
       // We add delay here to work correct on React Native
       // see: https://stackoverflow.com/questions/33208477/react-native-android-scrollview-scrollto-not-working
-      setTimeout(
+      const timeout = setTimeout(
         () => {
           if (scrollView && scrollView.current) {
             scrollView.current.scrollTo({
@@ -81,6 +81,10 @@ function _CalendarBody<T>({
         },
         Platform.OS === 'web' ? 0 : 10,
       )
+
+      return () => {
+        clearTimeout(timeout)
+      }
     }
   }, [scrollView, scrollOffsetMinutes, cellHeight])
 
@@ -95,19 +99,22 @@ function _CalendarBody<T>({
     [onPressCell],
   )
 
-  const _renderMappedEvent = (event: ICalendarEvent<T>) => (
-    <CalendarEvent
-      key={`${event.start}${event.title}${event.end}`}
-      event={event}
-      onPressEvent={onPressEvent}
-      eventCellStyle={eventCellStyle}
-      showTime={showTime}
-      eventCount={getCountOfEventsAtEvent(event, events)}
-      eventOrder={getOrderOfEvent(event, events)}
-      overlapOffset={overlapOffset}
-      renderEvent={renderEvent}
-      ampm={ampm}
-    />
+  const _renderMappedEvent = React.useCallback(
+    (event: ICalendarEvent<T>) => (
+      <CalendarEvent
+        key={`${event.start}${event.title}${event.end}`}
+        event={event}
+        onPressEvent={onPressEvent}
+        eventCellStyle={eventCellStyle}
+        showTime={showTime}
+        eventCount={getCountOfEventsAtEvent(event, events)}
+        eventOrder={getOrderOfEvent(event, events)}
+        overlapOffset={overlapOffset}
+        renderEvent={renderEvent}
+        ampm={ampm}
+      />
+    ),
+    [ampm, eventCellStyle, events, onPressEvent, overlapOffset, renderEvent, showTime],
   )
 
   const theme = useTheme()
@@ -127,10 +134,7 @@ function _CalendarBody<T>({
       nestedScrollEnabled
       contentOffset={Platform.OS === 'ios' ? { x: 0, y: scrollOffsetMinutes } : { x: 0, y: 0 }}
     >
-      <View
-        style={[u['flex-1'], theme.isRTL ? u['flex-row-reverse'] : u['flex-row']]}
-        {...(Platform.OS === 'web' ? panResponder.panHandlers : {})}
-      >
+      <View style={[u['flex-1'], theme.isRTL ? u['flex-row-reverse'] : u['flex-row']]}>
         <View style={[u['z-20'], u['w-50']]}>
           {hours.map((hour) => (
             <HourGuideColumn key={hour} cellHeight={cellHeight} hour={hour} ampm={ampm} />

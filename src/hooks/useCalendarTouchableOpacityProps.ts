@@ -41,7 +41,7 @@ export function useCalendarTouchableOpacityProps<T>({
 
   const touchableOpacityProps: CalendarTouchableOpacityProps = {
     delayPressIn: 20,
-    key: event.start.toString(),
+    key: `${event.start.toISOString()}_${event.title}`,
     style: [eventCellCss.style, ...injectedStyles, getEventStyle(plainJsEvent)],
     onPress: _onPress,
     disabled: !onPressEvent,
