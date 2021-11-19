@@ -12,7 +12,7 @@ interface HourGuideCellProps {
   hour: number
 }
 
-const _HourGuideCell = ({ cellHeight, onPress, date, hour }: HourGuideCellProps) => {
+export const HourGuideCell = ({ cellHeight, onPress, date, hour }: HourGuideCellProps) => {
   const theme = useTheme()
 
   return (
@@ -28,5 +28,3 @@ const _HourGuideCell = ({ cellHeight, onPress, date, hour }: HourGuideCellProps)
     </TouchableWithoutFeedback>
   )
 }
-
-export const HourGuideCell = React.memo(_HourGuideCell)

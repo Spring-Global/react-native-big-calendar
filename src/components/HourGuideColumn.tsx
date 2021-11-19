@@ -11,7 +11,7 @@ interface HourGuideColumnProps {
   ampm: boolean
 }
 
-const _HourGuideColumn = ({ cellHeight, hour, ampm }: HourGuideColumnProps) => {
+export const HourGuideColumn = ({ cellHeight, hour, ampm }: HourGuideColumnProps) => {
   const theme = useTheme()
   const textStyle = React.useMemo(
     () => ({ color: theme.palette.gray[500], fontSize: theme.typography.xs.fontSize }),
@@ -24,5 +24,3 @@ const _HourGuideColumn = ({ cellHeight, hour, ampm }: HourGuideColumnProps) => {
     </View>
   )
 }
-
-export const HourGuideColumn = React.memo(_HourGuideColumn, () => true)
