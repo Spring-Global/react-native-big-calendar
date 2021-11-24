@@ -63,42 +63,38 @@ function _CalendarBodyForMonthView<T>({
 
   const weeksCalendarized = calendarize(targetDate.toDate(), weekStartsOn)
 
-  const minCellHeight = Dimensions.get('window').height / 7
+  const minCellHeight = Dimensions.get('window').height / (weeksCalendarized.length + 1)
   const theme = useTheme()
 
-  const weeksWithEvents = React.useMemo(
-    () =>
-      weeksCalendarized.map((week) => {
-        const weekWithEvents = week.map((w) => {
-          if (w === 0) {
-            return null
+  const weeksWithEvents = weeksCalendarized.map((week) => {
+    const weekWithEvents = week.map((w) => {
+      if (w === 0) {
+        return null
+      }
+
+      const eventDate = dayjs(targetDate).set('date', w)
+
+      const dayEvents = events
+        .filter(({ start, end }) =>
+          eventDate.isBetween(dayjs(start).startOf('day'), dayjs(end).endOf('day')),
+        )
+        .sort((a, b) => {
+          if (dayjs(a.start).isSame(b.start, 'day')) {
+            const aDuration = dayjs.duration(dayjs(a.end).diff(dayjs(a.start))).days()
+            const bDuration = dayjs.duration(dayjs(b.end).diff(dayjs(b.start))).days()
+            return bDuration - aDuration
           }
-
-          const eventDate = dayjs(targetDate).set('date', w)
-
-          const dayEvents = events
-            .filter(({ start, end }) =>
-              eventDate.isBetween(dayjs(start).startOf('day'), dayjs(end).endOf('day')),
-            )
-            .sort((a, b) => {
-              if (dayjs(a.start).isSame(b.start, 'day')) {
-                const aDuration = dayjs.duration(dayjs(a.end).diff(dayjs(a.start))).days()
-                const bDuration = dayjs.duration(dayjs(b.end).diff(dayjs(b.start))).days()
-                return bDuration - aDuration
-              }
-              return a.start.getTime() - b.start.getTime()
-            })
-
-          return {
-            day: eventDate,
-            events: dayEvents,
-          }
+          return a.start.getTime() - b.start.getTime()
         })
 
-        return weekWithEvents
-      }),
-    [events, targetDate, weeksCalendarized],
-  )
+      return {
+        day: eventDate,
+        events: dayEvents,
+      }
+    })
+
+    return weekWithEvents
+  })
 
   return (
     <View
