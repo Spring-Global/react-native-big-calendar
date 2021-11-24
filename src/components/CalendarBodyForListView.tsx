@@ -67,7 +67,6 @@ function _CalendarBodyForListView<T>({
   listStickySectionHeadersEnabled = true,
 }: CalendarBodyForMonthViewProps<T>) {
   const theme = useTheme()
-  const [headerHeight, setHeaderHeight] = React.useState(46)
 
   const sectionListRef = React.useRef<SectionList<Event<T>>>(null)
 
@@ -163,23 +162,23 @@ function _CalendarBodyForListView<T>({
     [listGetCurrentSection],
   )
 
-  const getHeaderHeight = React.useCallback((event: LayoutChangeEvent) => {
-    const height = event.nativeEvent.layout.height
-    setHeaderHeight(height)
-  }, [])
-
   const renderSectionHeader = (info: { section: SectionListData<Event<T>> }) => {
     return (
-      <View
-        style={{ width: '100%', backgroundColor: '#fff', paddingVertical: 8, paddingLeft: 16 }}
-        onLayout={getHeaderHeight}
-      >
+      <View style={{ width: '100%', backgroundColor: '#fff', paddingVertical: 8, paddingLeft: 16 }}>
         <Text style={[theme.typography.xl, { ...listMonthSectionTextStyle }]}>
           {dayjs(info.section.title).format('MMM, YYYY')}
         </Text>
       </View>
     )
   }
+
+  const renderSeparator = React.useCallback(() => {
+    return <View style={{ width: '100%', height: 1, backgroundColor: 'lightgrey' }} />
+  }, [])
+
+  const renderSectionSeparatorComponent = React.useCallback(() => {
+    return <View />
+  }, [])
 
   const renderItem = React.useCallback(
     (result: { item: Event<T> }) => {
@@ -284,7 +283,7 @@ function _CalendarBodyForListView<T>({
   )
 
   return (
-    <View style={Platform.OS === 'web' ? { height: containerHeight - headerHeight } : u['flex-1']}>
+    <View style={Platform.OS === 'web' ? { height: containerHeight } : u['flex-1']}>
       <SectionList
         ref={sectionListRef}
         keyExtractor={(item, index) => item.dateString + index}
@@ -295,8 +294,8 @@ function _CalendarBodyForListView<T>({
         sections={eventsGroupedByDay}
         stickySectionHeadersEnabled={listStickySectionHeadersEnabled}
         renderSectionHeader={renderSectionHeader}
-        ItemSeparatorComponent={() => <View />}
-        SectionSeparatorComponent={() => <View />}
+        ItemSeparatorComponent={renderSeparator}
+        SectionSeparatorComponent={renderSectionSeparatorComponent}
         onViewableItemsChanged={onCheckViewableItems}
         bounces={false}
         viewabilityConfig={{
