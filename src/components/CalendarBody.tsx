@@ -67,7 +67,7 @@ function _CalendarBody<T>({
   const { now } = useNow(!hideNowIndicator)
 
   React.useEffect(() => {
-    if (scrollView.current && scrollOffsetMinutes) {
+    if (scrollView.current && scrollOffsetMinutes != null) {
       // We add delay here to work correct on React Native
       // see: https://stackoverflow.com/questions/33208477/react-native-android-scrollview-scrollto-not-working
       const timeout = setTimeout(
