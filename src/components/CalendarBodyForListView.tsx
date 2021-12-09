@@ -1,7 +1,6 @@
 import dayjs from 'dayjs'
 import * as React from 'react'
 import {
-  LayoutChangeEvent,
   Platform,
   SectionList,
   SectionListData,
@@ -15,10 +14,126 @@ import {
 import { u } from '../commonStyles'
 import { EventCellStyle, EventRenderer, ICalendarEvent } from '../interfaces'
 import { useTheme } from '../theme/ThemeContext'
-import { isToday, typedMemo } from '../utils'
+import { isToday } from '../utils'
 import { CalendarEventForListView } from './CalendarEventForListView'
 
 const ITEM_SPACING = 12
+
+type ListItemProps = {
+  isToday: boolean
+  dateHeaderTodayDayText?: TextStyle
+  dateHeaderDayText?: TextStyle
+  date: dayjs.Dayjs
+  dateHeaderTodayContainer?: ViewStyle
+  dateHeaderTodayText?: TextStyle
+  dateHeaderText?: TextStyle
+  ampm: boolean
+  isRTL: boolean
+  renderEvent?: EventRenderer<any>
+  onPressEvent?: (event: any) => void
+  eventCellStyle?: EventCellStyle<any>
+  events: ListCalendarEvent<any>[]
+  selectedItem: any
+}
+
+const ListItem = ({
+  isToday,
+  ampm,
+  date,
+  events,
+  isRTL,
+  dateHeaderDayText,
+  dateHeaderTodayContainer,
+  dateHeaderTodayDayText,
+  eventCellStyle,
+  onPressEvent,
+  renderEvent,
+  dateHeaderTodayText,
+  dateHeaderText,
+  selectedItem,
+}: ListItemProps) => {
+  return (
+    <View style={[u['flex-row'], { marginVertical: ITEM_SPACING }]}>
+      <View style={{ width: 60 }}>
+        <Text
+          style={[
+            u['text-center'],
+            {
+              ...(isToday ? dateHeaderTodayDayText ?? {} : dateHeaderDayText ?? {}),
+            },
+          ]}
+        >
+          {date.format('ddd')}
+        </Text>
+        <View
+          style={
+            isToday
+              ? [
+                  u['h-36'],
+                  u['w-36'],
+                  u['pb-6'],
+                  u['rounded-full'],
+                  u['items-center'],
+                  u['justify-center'],
+                  u['self-center'],
+                  u['z-20'],
+                  dateHeaderTodayContainer ?? {},
+                ]
+              : [u['mb-6']]
+          }
+        >
+          <Text
+            style={[
+              u['text-center'],
+              Platform.OS === 'web' && isToday && u['mt-6'],
+              {
+                ...(isToday ? dateHeaderTodayText ?? {} : dateHeaderText ?? {}),
+              },
+            ]}
+          >
+            {date.format('D')}
+          </Text>
+        </View>
+      </View>
+
+      <View style={u['flex-1']}>
+        {events.map((event: ListCalendarEvent<any>, index: number) => {
+          const _selected = selectedItem === event.idVisitInstance
+          return (
+            <CalendarEventForListView
+              key={index}
+              ampm={ampm}
+              isRTL={isRTL}
+              event={event}
+              eventCellStyle={eventCellStyle}
+              onPressEvent={onPressEvent}
+              renderEvent={renderEvent}
+              selected={_selected}
+            />
+          )
+        })}
+      </View>
+    </View>
+  )
+}
+
+const areEqual2 = (prev: ListItemProps, next: ListItemProps) => {
+  if (!prev.date.isSame(next.date)) {
+    return false
+  }
+  if (JSON.stringify(prev.events) !== JSON.stringify(next.events)) {
+    return false
+  }
+  if (prev.isToday !== next.isToday) {
+    return false
+  }
+  if (prev.selectedItem !== next.selectedItem) {
+    return false
+  }
+  return true
+}
+
+const MemoizedListItem = React.memo(ListItem, areEqual2)
 
 export type ListCalendarEvent<T> = ICalendarEvent<T> & {
   isOverlap?: boolean
@@ -35,7 +150,7 @@ type EventGroup<T> = {
   data: Event<T>[]
 }
 
-interface CalendarBodyForMonthViewProps<T> {
+interface CalendarBodyForListViewProps<T> {
   events: ListCalendarEvent<T>[]
   ampm: boolean
   showTime: boolean
@@ -50,6 +165,7 @@ interface CalendarBodyForMonthViewProps<T> {
   listMonthSectionTextStyle?: TextStyle
   listGetCurrentSection?: (currentSection: string) => void
   listStickySectionHeadersEnabled?: boolean
+  selectedItem?: any
 }
 
 function _CalendarBodyForListView<T>({
@@ -65,7 +181,8 @@ function _CalendarBodyForListView<T>({
   listMonthSectionTextStyle,
   listGetCurrentSection,
   listStickySectionHeadersEnabled = true,
-}: CalendarBodyForMonthViewProps<T>) {
+  selectedItem,
+}: CalendarBodyForListViewProps<T>) {
   const theme = useTheme()
 
   const sectionListRef = React.useRef<SectionList<Event<T>>>(null)
@@ -180,113 +297,35 @@ function _CalendarBodyForListView<T>({
     return <View />
   }, [])
 
-  const renderItem = React.useCallback(
-    (result: { item: Event<T> }) => {
-      const dateString = result.item.dateString
-      const date = dayjs(dateString)
-      const _isToday = isToday(date)
+  const renderItem = (result: { item: Event<T> }) => {
+    const dateString = result.item.dateString
+    const date = dayjs(dateString)
+    const _isToday = isToday(date)
 
-      return (
-        <View style={[u['flex-row'], { marginVertical: ITEM_SPACING }]}>
-          <View style={{ width: 60 }}>
-            <Text
-              style={[
-                theme.typography.xs,
-                u['text-center'],
-                { color: _isToday ? theme.palette.primary.main : theme.palette.gray['500'] },
-                {
-                  ...(_isToday
-                    ? theme.customStyles?.dateHeaderTodayDayText
-                    : theme.customStyles?.dateHeaderDayText),
-                },
-              ]}
-            >
-              {date.format('ddd')}
-            </Text>
-            <View
-              style={
-                _isToday
-                  ? [
-                      {
-                        backgroundColor: theme.palette.primary.main,
-                      },
-                      u['h-36'],
-                      u['w-36'],
-                      u['pb-6'],
-                      u['rounded-full'],
-                      u['items-center'],
-                      u['justify-center'],
-                      u['self-center'],
-                      u['z-20'],
-                      theme.customStyles?.dateHeaderTodayContainer,
-                    ]
-                  : [u['mb-6']]
-              }
-            >
-              <Text
-                style={[
-                  {
-                    color: _isToday
-                      ? theme.palette.primary.contrastText
-                      : theme.palette.gray['800'],
-                  },
-                  theme.typography.xl,
-                  u['text-center'],
-                  Platform.OS === 'web' && _isToday && u['mt-6'],
-                  {
-                    ...(_isToday
-                      ? theme.customStyles?.dateHeaderTodayText
-                      : theme.customStyles?.dateHeaderText),
-                  },
-                ]}
-              >
-                {date.format('D')}
-              </Text>
-            </View>
-          </View>
-
-          <View style={[u['flex-1']]}>
-            {result.item.events.map((event: ListCalendarEvent<T>, index: number) => {
-              return (
-                <CalendarEventForListView
-                  key={index}
-                  ampm={ampm}
-                  isRTL={theme.isRTL}
-                  event={event}
-                  eventCellStyle={eventCellStyle}
-                  onPressEvent={onPressEvent}
-                  renderEvent={renderEvent}
-                />
-              )
-            })}
-          </View>
-        </View>
-      )
-    },
-    [
-      ampm,
-      eventCellStyle,
-      onPressEvent,
-      renderEvent,
-      theme.customStyles?.dateHeaderDayText,
-      theme.customStyles?.dateHeaderText,
-      theme.customStyles?.dateHeaderTodayContainer,
-      theme.customStyles?.dateHeaderTodayDayText,
-      theme.customStyles?.dateHeaderTodayText,
-      theme.isRTL,
-      theme.palette.gray,
-      theme.palette.primary.contrastText,
-      theme.palette.primary.main,
-      theme.typography.xl,
-      theme.typography.xs,
-    ],
-  )
+    return (
+      <MemoizedListItem
+        ampm={ampm}
+        date={date}
+        events={result.item.events}
+        isRTL={theme.isRTL}
+        isToday={_isToday}
+        dateHeaderDayText={theme.customStyles?.dateHeaderDayText}
+        dateHeaderText={theme.customStyles?.dateHeaderText}
+        dateHeaderTodayContainer={theme.customStyles?.dateHeaderTodayContainer}
+        dateHeaderTodayDayText={theme.customStyles?.dateHeaderTodayDayText}
+        dateHeaderTodayText={theme.customStyles?.dateHeaderTodayText}
+        eventCellStyle={eventCellStyle}
+        onPressEvent={onPressEvent}
+        renderEvent={renderEvent}
+        selectedItem={selectedItem}
+      />
+    )
+  }
 
   return (
     <View style={Platform.OS === 'web' ? { height: containerHeight } : u['flex-1']}>
       <SectionList
         ref={sectionListRef}
-        keyExtractor={(item, index) => item.dateString + index}
         renderItem={renderItem}
         onEndReached={onEndReached}
         onEndReachedThreshold={onEndReachedThreshold}
@@ -298,6 +337,7 @@ function _CalendarBodyForListView<T>({
         SectionSeparatorComponent={renderSectionSeparatorComponent}
         onViewableItemsChanged={onCheckViewableItems}
         bounces={false}
+        extraData={selectedItem}
         viewabilityConfig={{
           itemVisiblePercentThreshold: 10,
         }}
@@ -313,4 +353,23 @@ function _CalendarBodyForListView<T>({
   )
 }
 
-export const CalendarBodyForListView = typedMemo(_CalendarBodyForListView)
+const areEqual = (
+  prev: CalendarBodyForListViewProps<any>,
+  next: CalendarBodyForListViewProps<any>,
+) => {
+  if (prev.selectedItem !== next.selectedItem) {
+    return false
+  }
+  if (JSON.stringify(prev.events) !== JSON.stringify(next.events)) {
+    return false
+  }
+  if (prev.scrollToDate !== next.scrollToDate) {
+    return false
+  }
+  if (prev.listStickySectionHeadersEnabled !== next.listStickySectionHeadersEnabled) {
+    return false
+  }
+  return true
+}
+
+export const CalendarBodyForListView = React.memo(_CalendarBodyForListView, areEqual)

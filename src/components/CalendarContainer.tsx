@@ -119,6 +119,8 @@ export interface CalendarContainerProps<T> {
    * If enabled the current month text will be shown on the header.
    */
   showMonthOnHeader?: boolean
+
+  selectedItem?: any
 }
 
 dayjs.extend(isBetween)
@@ -157,6 +159,7 @@ function _CalendarContainer<T>({
   listGetCurrentSection,
   listStickySectionHeadersEnabled,
   showMonthOnHeader,
+  selectedItem,
 }: CalendarContainerProps<T>) {
   const targetDate = dayjs(date)
 
@@ -237,6 +240,7 @@ function _CalendarContainer<T>({
         onEndReachedThreshold={listOnEndReachedThreshold}
         listGetCurrentSection={listGetCurrentSection}
         listStickySectionHeadersEnabled={listStickySectionHeadersEnabled}
+        selectedItem={selectedItem}
       />
     )
   }
