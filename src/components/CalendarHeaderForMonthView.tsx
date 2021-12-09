@@ -34,7 +34,7 @@ function _CalendarHeaderForMonthView({
     >
       {dates.map((date) => (
         <View style={{ flex: 1, paddingTop: 2 }} key={date.toISOString()}>
-          <View style={{ height: 30 }}>
+          <View style={{ height: 30, alignItems: 'center', justifyContent: 'center' }}>
             <Text
               style={[
                 u['text-center'],
