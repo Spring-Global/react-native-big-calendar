@@ -76,7 +76,7 @@ function _CalendarBodyForMonthView<T>({
 
       const dayEvents = events
         .filter(({ start, end }) =>
-          eventDate.isBetween(dayjs(start).startOf('day'), dayjs(end).endOf('day')),
+          eventDate.isBetween(dayjs(start).startOf('day'), dayjs(end).endOf('day'), null, '[)'),
         )
         .sort((a, b) => {
           if (dayjs(a.start).isSame(b.start, 'day')) {
