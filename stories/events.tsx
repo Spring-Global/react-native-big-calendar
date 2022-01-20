@@ -12,7 +12,7 @@ const eventNotes = (
   </View>
 )
 
-export const events: ICalendarEvent<{ color?: string }>[] = [
+export let events: ICalendarEvent<{ color?: string }>[] = [
   {
     title: 'Watch Boxing',
     start: dayjs().set('hour', 0).set('minute', 0).set('second', 0).toDate(),
@@ -56,6 +56,77 @@ export const events: ICalendarEvent<{ color?: string }>[] = [
     children: eventNotes,
   },
 ]
+//events.push(...events);
+
+let day = 1
+function incrementDayFromInterval(min: number, max: number) {
+  // min and max included
+  //return Math.floor(Math.random() * (max - min + 1) + min);
+  day++
+  if (day > max) {
+    day = min
+  }
+  //console.log("day", day);
+  return day
+}
+
+function randomIntFromInterval(min: number, max: number) {
+  // min and max included
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+console.time('start creating')
+for (let i = 0; i < 50000; i++) {
+  const day = incrementDayFromInterval(1, 30)
+  const hour = randomIntFromInterval(1, 23)
+  const startDate = dayjs()
+    .set('day', day)
+    .set('month', 0)
+    .set('hour', hour)
+    .set('minute', 0)
+    .toDate()
+  events.push({
+    title: startDate.toString(),
+    start: startDate,
+    end: dayjs()
+      .set('day', day)
+      .set('month', 0)
+      .set('hour', hour + 1)
+      .set('minute', 30)
+      .toDate(),
+  })
+}
+for (let i = 0; i < 50000; i++) {
+  const day = incrementDayFromInterval(1, 30)
+  const hour = randomIntFromInterval(1, 23)
+  const startDate = dayjs()
+    .set('day', day)
+    .set('month', 1)
+    .set('hour', hour)
+    .set('minute', 0)
+    .toDate()
+  events.push({
+    title: startDate.toString(),
+    start: startDate,
+    end: dayjs()
+      .set('day', day)
+      .set('month', 1)
+      .set('hour', hour + 1)
+      .set('minute', 30)
+      .toDate(),
+  })
+}
+console.timeEnd('start creating')
+//console.log("events", events.length);
+// console.log("events", events);
+/*events = events.map(evt => {
+  const day = randomIntFromInterval(1, 10);
+  evt.start.setDate(day)
+  evt.end.setDate(day);
+  evt.title = evt.start.toString() + evt.title;
+  console.log("evt", evt);  
+  return evt;
+});*/
 
 export const spanningEvents: ICalendarEvent<{ color?: string }>[] = [
   {
