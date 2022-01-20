@@ -3,7 +3,6 @@ import dayjs from 'dayjs'
 import * as React from 'react'
 import {
   Dimensions,
-  LayoutChangeEvent,
   Platform,
   ScrollView,
   Text,
@@ -29,7 +28,7 @@ import { CalendarEventForMonthView } from './CalendarEventForMonthView'
 interface CalendarBodyForMonthViewProps<T> {
   containerHeight: number
   targetDate: dayjs.Dayjs
-  events: ICalendarEvent<T>[]
+  dayEventsHash: Map<string, ICalendarEvent<T>[]>
   style: ViewStyle
   eventCellStyle?: EventCellStyle<T>
   hideNowIndicator?: boolean
@@ -46,7 +45,6 @@ function _CalendarBodyForMonthView<T>({
   targetDate,
   style,
   onPressCell,
-  events,
   onPressEvent,
   eventCellStyle,
   onSwipeHorizontal,
@@ -54,6 +52,7 @@ function _CalendarBodyForMonthView<T>({
   renderEvent,
   maxVisibleEventCount,
   weekStartsOn,
+  dayEventsHash,
 }: CalendarBodyForMonthViewProps<T>) {
   const { now } = useNow(!hideNowIndicator)
 
@@ -72,24 +71,42 @@ function _CalendarBodyForMonthView<T>({
         return null
       }
 
-      const eventDate = dayjs(targetDate).set('date', w)
+      const eventDate = dayjs(targetDate).set('date', w).startOf('day')
+      const dayEvents = dayEventsHash.get(eventDate.toString()) || new Array<ICalendarEvent<T>>()
 
-      const dayEvents = events
-        .filter(({ start, end }) =>
-          eventDate.isBetween(dayjs(start).startOf('day'), dayjs(end).endOf('day'), null, '[)'),
+      const components: any[] = []
+      for (let i = 0; i < Math.min(maxVisibleEventCount, dayEvents.length); i++) {
+        const event = dayEvents[i]
+        components.push(
+          <CalendarEventForMonthView
+            key={`eventMonth_${event.start.toISOString()}_${i}`}
+            event={event}
+            eventCellStyle={eventCellStyle}
+            onPressEvent={onPressEvent}
+            renderEvent={renderEvent}
+            date={eventDate}
+            dayOfTheWeek={w}
+            calendarWidth={0}
+            isRTL={theme.isRTL}
+          />,
         )
-        .sort((a, b) => {
-          if (dayjs(a.start).isSame(b.start, 'day')) {
-            const aDuration = dayjs.duration(dayjs(a.end).diff(dayjs(a.start))).days()
-            const bDuration = dayjs.duration(dayjs(b.end).diff(dayjs(b.start))).days()
-            return bDuration - aDuration
-          }
-          return a.start.getTime() - b.start.getTime()
-        })
+      }
+
+      if (dayEvents.length > maxVisibleEventCount) {
+        components.push(
+          <Text
+            key={`maxEvents_${eventDate.toISOString()}`}
+            style={{ fontSize: 11, marginTop: 2, fontWeight: 'bold' }}
+          >
+            {dayEvents.length - maxVisibleEventCount} More
+          </Text>,
+        )
+      }
 
       return {
         day: eventDate,
         events: dayEvents,
+        components,
       }
     })
 
@@ -164,32 +181,9 @@ function _CalendarBodyForMonthView<T>({
                     >
                       {date.day.format('D')}
                     </Text>
-                    {date.events.reduce(
-                      (elements, event, index, events) => [
-                        ...elements,
-                        index > maxVisibleEventCount ? null : index === maxVisibleEventCount ? (
-                          <Text
-                            key={`maxEvents_${event.start.toISOString()}_${index}`}
-                            style={{ fontSize: 11, marginTop: 2, fontWeight: 'bold' }}
-                          >
-                            {events.length - maxVisibleEventCount} More
-                          </Text>
-                        ) : (
-                          <CalendarEventForMonthView
-                            key={`eventMonth_${event.start.toISOString()}_${index}`}
-                            event={event}
-                            eventCellStyle={eventCellStyle}
-                            onPressEvent={onPressEvent}
-                            renderEvent={renderEvent}
-                            date={date.day}
-                            dayOfTheWeek={ii}
-                            calendarWidth={0}
-                            isRTL={theme.isRTL}
-                          />
-                        ),
-                      ],
-                      [] as (null | JSX.Element)[],
-                    )}
+
+                    {/* Render events */}
+                    {date.components}
                   </>
                 )}
               </TouchableOpacity>

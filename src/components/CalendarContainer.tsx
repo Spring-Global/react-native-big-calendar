@@ -173,6 +173,24 @@ function _CalendarContainer<T>({
     [events],
   )
 
+  const dayEventsHash = React.useMemo(() => {
+    const sortedEvents = events.sort((a, b) => a.start.getTime() - b.end.getTime())
+    const hash = new Map<string, ICalendarEvent<T>[]>()
+    sortedEvents.forEach((event) => {
+      const startDayJs = dayjs(event.start)
+      const endtDayJs = dayjs(event.end)
+      const key = startDayJs.startOf('day').toString()
+
+      let dayEvents = hash.get(key)
+      if (dayEvents == null) {
+        dayEvents = []
+        hash.set(key, dayEvents)
+      }
+      dayEvents!.push(event)
+    })
+    return hash
+  }, [events])
+
   const dateRange = React.useMemo(() => {
     switch (mode) {
       case 'month':
@@ -256,9 +274,9 @@ function _CalendarContainer<T>({
         <HeaderComponentForMonthView {...headerProps} />
         <CalendarBodyForMonthView<T>
           {...commonProps}
+          dayEventsHash={dayEventsHash}
           style={bodyContainerStyle}
           containerHeight={height}
-          events={daytimeEvents}
           eventCellStyle={eventCellStyle}
           weekStartsOn={weekStartsOn}
           hideNowIndicator={hideNowIndicator}
