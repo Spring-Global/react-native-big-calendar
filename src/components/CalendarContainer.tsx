@@ -174,9 +174,8 @@ function _CalendarContainer<T>({
   )
 
   const dayEventsHash = React.useMemo(() => {
-    const sortedEvents = events.sort((a, b) => a.start.getTime() - b.end.getTime())
     const hash = new Map<string, ICalendarEvent<T>[]>()
-    sortedEvents.forEach((event) => {
+    events.forEach((event) => {
       const startDayJs = dayjs(event.start)
       const endtDayJs = dayjs(event.end)
       const key = startDayJs.startOf('day').toString()
