@@ -5,7 +5,7 @@ import { OVERLAP_PADDING } from './commonStyles'
 import { ICalendarEvent, Mode, WeekNum } from './interfaces'
 import { Palette } from './theme/ThemeInterface'
 
-export const typedMemo: <T>(c: T) => T = React.memo
+export const typedMemo: <T>(c: T, areEqual?: (prev: T, next: T) => boolean) => T = React.memo
 
 export const DAY_MINUTES = 1440
 

@@ -14,7 +14,7 @@ import {
 import { u } from '../commonStyles'
 import { EventCellStyle, EventRenderer, ICalendarEvent } from '../interfaces'
 import { useTheme } from '../theme/ThemeContext'
-import { isToday } from '../utils'
+import { isToday, typedMemo } from '../utils'
 import { CalendarEventForListView } from './CalendarEventForListView'
 
 const ITEM_SPACING = 12
@@ -353,10 +353,7 @@ function _CalendarBodyForListView<T>({
   )
 }
 
-const areEqual = (
-  prev: CalendarBodyForListViewProps<any>,
-  next: CalendarBodyForListViewProps<any>,
-) => {
+function areEqual<T>(prev: CalendarBodyForListViewProps<T>, next: CalendarBodyForListViewProps<T>) {
   if (prev.selectedItem !== next.selectedItem) {
     return false
   }
@@ -372,4 +369,4 @@ const areEqual = (
   return true
 }
 
-export const CalendarBodyForListView = React.memo(_CalendarBodyForListView, areEqual)
+export const CalendarBodyForListView = typedMemo(_CalendarBodyForListView, areEqual as any)
