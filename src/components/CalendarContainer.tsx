@@ -21,7 +21,6 @@ import {
   getDatesInNextOneDay,
   getDatesInNextThreeDays,
   getDatesInWeek,
-  isAllDayEvent,
   modeToNum,
   typedMemo,
 } from '../utils'
@@ -163,32 +162,15 @@ function _CalendarContainer<T>({
 }: CalendarContainerProps<T>) {
   const targetDate = dayjs(date)
 
-  const allDayEvents = React.useMemo(
-    () => events.filter((event) => isAllDayEvent(event.start, event.end)),
-    [events],
-  )
+  const allDayEvents: ICalendarEvent<T>[] = [] //React.useMemo(
+  //   () => events.filter((event) => isAllDayEvent(event.start, event.end)),
+  //   [events],
+  // )
 
-  const daytimeEvents = React.useMemo(
-    () => events.filter((event) => !isAllDayEvent(event.start, event.end)),
-    [events],
-  )
-
-  const dayEventsHash = React.useMemo(() => {
-    const hash = new Map<string, ICalendarEvent<T>[]>()
-    events.forEach((event) => {
-      const startDayJs = dayjs(event.start)
-      const endtDayJs = dayjs(event.end)
-      const key = startDayJs.startOf('day').toString()
-
-      let dayEvents = hash.get(key)
-      if (dayEvents == null) {
-        dayEvents = []
-        hash.set(key, dayEvents)
-      }
-      dayEvents!.push(event)
-    })
-    return hash
-  }, [events])
+  const daytimeEvents: ICalendarEvent<T>[] = [] //React.useMemo(
+  //   () => events.filter((event) => !isAllDayEvent(event.start, event.end)),
+  //   [events],
+  // )
 
   const dateRange = React.useMemo(() => {
     switch (mode) {
@@ -209,6 +191,70 @@ function _CalendarContainer<T>({
         )
     }
   }, [mode, targetDate, locale, weekEndsOn, weekStartsOn])
+
+  const dayEventsHash = React.useMemo(() => {
+    const hash = new Map<number | string, ICalendarEvent<T>[]>()
+
+    events.forEach((event) => {
+      const startDayJs = dayjs(event.start)
+      const endtDayJs = dayjs(event.end)
+      const key = startDayJs.startOf('day').valueOf()
+
+      let dayEvents = hash.get(key)
+      if (dayEvents == null) {
+        dayEvents = []
+        hash.set(key, dayEvents)
+      }
+      dayEvents.push(event)
+
+      if (mode !== 'month') {
+        dateRange.forEach((date) => {
+          const thisDateCondition = dayjs(event.start).isBetween(
+            date.startOf('day'),
+            date.endOf('day'),
+            null,
+            '[)',
+          )
+          const endsThisDateCondition =
+            dayjs(event.start).isBefore(date.startOf('day')) &&
+            dayjs(event.end).isBetween(date.startOf('day'), date.endOf('day'), null, '[)')
+          const beforeAndAfterThisDateCondition =
+            dayjs(event.start).isBefore(date.startOf('day')) &&
+            dayjs(event.end).isAfter(date.endOf('day'))
+
+          const dateKey = date.format('L')
+
+          let eventsThisDateHash = hash.get(`${dateKey}_this-date`)
+          let eventsEndsThisDateHash = hash.get(`${dateKey}_ends-this-date`)
+          let eventsBeforeAndAfterThisDateHash = hash.get(`${dateKey}_before-and-after-this-date`)
+          if (eventsThisDateHash == null) {
+            eventsThisDateHash = []
+            hash.set(`${dateKey}_this-date`, eventsThisDateHash)
+          }
+          if (eventsEndsThisDateHash == null) {
+            eventsEndsThisDateHash = []
+            hash.set(`${dateKey}_ends-this-date`, eventsEndsThisDateHash)
+          }
+          if (eventsBeforeAndAfterThisDateHash == null) {
+            eventsBeforeAndAfterThisDateHash = []
+            hash.set(`${dateKey}_before-and-after-this-date`, eventsBeforeAndAfterThisDateHash)
+          }
+
+          if (thisDateCondition) {
+            eventsThisDateHash.push(event)
+          } else if (endsThisDateCondition) {
+            event.start = dayjs(event.end).startOf('day').toDate()
+            eventsEndsThisDateHash.push(event)
+          } else if (beforeAndAfterThisDateCondition) {
+            event.start = dayjs(event.end).startOf('day').toDate()
+            event.end = dayjs(event.end).endOf('day').toDate()
+            eventsBeforeAndAfterThisDateHash.push(event)
+          }
+        })
+      }
+    })
+    return hash
+  }, [dateRange, events, mode])
 
   const _cellHeight = React.useMemo(
     () => (cellHeight ? cellHeight : Math.max(height - 30, MIN_HEIGHT) / 24),
@@ -305,7 +351,6 @@ function _CalendarContainer<T>({
         {...commonProps}
         style={bodyContainerStyle}
         containerHeight={height}
-        events={daytimeEvents}
         eventCellStyle={eventCellStyle}
         hideNowIndicator={hideNowIndicator}
         overlapOffset={overlapOffset}
@@ -316,6 +361,7 @@ function _CalendarContainer<T>({
         onPressEvent={onPressEvent}
         onSwipeHorizontal={onSwipeHorizontal}
         renderEvent={renderEvent}
+        dayEventsHash={dayEventsHash}
       />
     </React.Fragment>
   )

@@ -28,7 +28,7 @@ import { CalendarEventForMonthView } from './CalendarEventForMonthView'
 interface CalendarBodyForMonthViewProps<T> {
   containerHeight: number
   targetDate: dayjs.Dayjs
-  dayEventsHash: Map<string, ICalendarEvent<T>[]>
+  dayEventsHash: Map<number | string, ICalendarEvent<T>[]>
   style: ViewStyle
   eventCellStyle?: EventCellStyle<T>
   hideNowIndicator?: boolean
@@ -72,7 +72,7 @@ function _CalendarBodyForMonthView<T>({
       }
 
       const eventDate = dayjs(targetDate).set('date', w).startOf('day')
-      const dayEvents = dayEventsHash.get(eventDate.toString()) || new Array<ICalendarEvent<T>>()
+      const dayEvents = dayEventsHash.get(eventDate.valueOf()) || new Array<ICalendarEvent<T>>()
 
       const components: any[] = []
       for (let i = 0; i < Math.min(maxVisibleEventCount, dayEvents.length); i++) {
