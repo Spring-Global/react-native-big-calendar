@@ -197,7 +197,7 @@ function _CalendarContainer<T>({
 
     events.forEach((event) => {
       const startDayJs = dayjs(event.start)
-      const endtDayJs = dayjs(event.end)
+      // const endtDayJs = dayjs(event.end)
       const key = startDayJs.startOf('day').valueOf()
 
       let dayEvents = hash.get(key)

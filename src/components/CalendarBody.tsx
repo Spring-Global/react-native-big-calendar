@@ -1,17 +1,11 @@
-import dayjs, { OpUnitType } from 'dayjs'
+import dayjs from 'dayjs'
 import * as React from 'react'
 import { Platform, ScrollView, StyleSheet, View, ViewStyle } from 'react-native'
 
 import { u } from '../commonStyles'
 import { useNow } from '../hooks/useNow'
 import { usePanResponder } from '../hooks/usePanResponder'
-import {
-  EventCellStyle,
-  EventRenderer,
-  HorizontalDirection,
-  ICalendarEvent,
-  Mode,
-} from '../interfaces'
+import { EventCellStyle, EventRenderer, HorizontalDirection, ICalendarEvent } from '../interfaces'
 import { useTheme } from '../theme/ThemeContext'
 import {
   getCountOfEventsAtEvent,
@@ -80,7 +74,7 @@ function _CalendarBody<T>({
     if (scrollView.current && scrollOffsetMinutes != null) {
       // We add delay here to work correct on React Native
       // see: https://stackoverflow.com/questions/33208477/react-native-android-scrollview-scrollto-not-working
-      const timeout = setTimeout(
+      setTimeout(
         () => {
           if (scrollView && scrollView.current) {
             scrollView.current.scrollTo({
@@ -91,10 +85,6 @@ function _CalendarBody<T>({
         },
         Platform.OS === 'web' ? 0 : 10,
       )
-
-      return () => {
-        clearTimeout(timeout)
-      }
     }
   }, [scrollView, scrollOffsetMinutes, cellHeight])
 

@@ -236,8 +236,6 @@ function _CalendarBodyForListView<T>({
   )
 
   React.useEffect(() => {
-    let timeout: NodeJS.Timeout
-
     if (scrollToDate) {
       const eventGroupIndex = eventsGroupedByDay.findIndex(
         (group) => group.title === dayjs(scrollToDate).format('YYYY-MM'),
@@ -249,7 +247,7 @@ function _CalendarBodyForListView<T>({
         )
 
         if (eventIndex !== -1) {
-          timeout = setTimeout(() => {
+          setTimeout(() => {
             sectionListRef.current?.scrollToLocation({
               sectionIndex: eventGroupIndex,
               itemIndex: eventIndex + 1,
@@ -257,12 +255,6 @@ function _CalendarBodyForListView<T>({
             })
           }, 300)
         }
-      }
-    }
-
-    return () => {
-      if (timeout) {
-        clearTimeout(timeout)
       }
     }
   }, [eventsGroupedByDay, scrollToDate])

@@ -3,7 +3,7 @@ import React from 'react'
 import { GestureResponderEvent, Text, TouchableOpacity } from 'react-native'
 
 import { CalendarTouchableOpacityProps, EventCellStyle, EventRenderer } from '../interfaces'
-import { formatStartEnd, typedMemo } from '../utils'
+import { formatStartEnd } from '../utils'
 import { ListCalendarEvent } from './CalendarBodyForListView'
 
 interface CalendarEventProps<T> {
@@ -16,14 +16,11 @@ interface CalendarEventProps<T> {
   selected: boolean
 }
 
-const OVERLAP_OFFSET = 20
-
 function _CalendarEventForListView<T>({
   event,
   onPressEvent,
   renderEvent,
   ampm,
-  selected,
 }: CalendarEventProps<T>) {
   const plainJsEvent = React.useMemo(
     () => ({
