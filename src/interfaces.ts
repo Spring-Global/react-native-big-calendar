@@ -14,7 +14,7 @@ export interface ICalendarEventBase {
 export type CalendarTouchableOpacityProps = {
   delayPressIn: number
   key: string
-  style: RecursiveArray<ViewStyle | undefined> | ViewStyle
+  style: RecursiveArray<ViewStyle> | ViewStyle | undefined
   onPress: (evt: GestureResponderEvent) => void
   disabled: boolean
 }

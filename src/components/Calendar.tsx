@@ -17,7 +17,7 @@ export interface CalendarProps<T> extends CalendarContainerProps<T> {
 
 dayjs.extend(isBetween)
 
-function _Calendar<T>({ theme = defaultTheme, isRTL, ...props }: CalendarProps<T>) {
+function _Calendar<T>({ theme = defaultTheme as any, isRTL, ...props }: CalendarProps<T>) {
   const _theme = merge(defaultTheme, theme, { isRTL }) as ThemeInterface
   return (
     <ThemeContext.Provider value={_theme}>
