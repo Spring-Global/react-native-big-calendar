@@ -222,7 +222,7 @@ function _CalendarContainer<T>({
             dayjs(event.start).isBefore(date.startOf('day')) &&
             dayjs(event.end).isAfter(date.endOf('day'))
 
-          const dateKey = date.format('L')
+          const dateKey = date.format('MM/DD/YYYY')
 
           let eventsThisDateHash = hash.get(`${dateKey}_this-date`)
           let eventsEndsThisDateHash = hash.get(`${dateKey}_ends-this-date`)

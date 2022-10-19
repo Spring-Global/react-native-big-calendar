@@ -142,7 +142,7 @@ function _CalendarBody<T>({
           ))}
         </View>
         {dateRange.map((date) => {
-          const dateKey = date.format('L')
+          const dateKey = date.format('MM/DD/YYYY')
           eventsThisDate = dayEventsHash.get(`${dateKey}_this-date`) || []
           eventsEndsThisDate = dayEventsHash.get(`${dateKey}_ends-this-date`) || []
           eventsBeforeAndAfterThisDate =
