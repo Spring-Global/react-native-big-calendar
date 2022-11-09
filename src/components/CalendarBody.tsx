@@ -100,7 +100,7 @@ function _CalendarBody<T>({
   )
 
   const _renderMappedEvent = (event: ICalendarEvent<T>) => {
-    const events = [...eventsThisDate, ...eventsEndsThisDate, ...eventsBeforeAndAfterThisDate]
+    // const events = [...eventsThisDate, ...eventsEndsThisDate, ...eventsBeforeAndAfterThisDate]
 
     return (
       <CalendarEvent
@@ -112,8 +112,8 @@ function _CalendarBody<T>({
         overlapOffset={overlapOffset}
         renderEvent={renderEvent}
         ampm={ampm}
-        eventCount={getCountOfEventsAtEvent(event, events)}
-        eventOrder={getOrderOfEvent(event, events)}
+        // eventCount={getCountOfEventsAtEvent(event, events)}
+        // eventOrder={getOrderOfEvent(event, events)}
       />
     )
   }
