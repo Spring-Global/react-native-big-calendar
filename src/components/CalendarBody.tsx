@@ -99,12 +99,12 @@ function _CalendarBody<T>({
     [onPressCell],
   )
 
-  const _renderMappedEvent = (event: ICalendarEvent<T>) => {
-    // const events = [...eventsThisDate, ...eventsEndsThisDate, ...eventsBeforeAndAfterThisDate]
+  const _renderMappedEvent = (event: ICalendarEvent<T>, index: number) => {
+    const events = [...eventsThisDate, ...eventsEndsThisDate, ...eventsBeforeAndAfterThisDate]
 
     return (
       <CalendarEvent
-        key={`${event.start.toISOString()}${event.title}${event.end.toISOString()}`}
+        key={`${event.start.valueOf}_${index}}`}
         event={event}
         onPressEvent={onPressEvent}
         eventCellStyle={eventCellStyle}
@@ -112,8 +112,8 @@ function _CalendarBody<T>({
         overlapOffset={overlapOffset}
         renderEvent={renderEvent}
         ampm={ampm}
-        // eventCount={getCountOfEventsAtEvent(event, events)}
-        // eventOrder={getOrderOfEvent(event, events)}
+        eventCount={events.length}
+        eventOrder={event.eventOrder}
       />
     )
   }
