@@ -21,6 +21,7 @@ import {
   getDatesInNextOneDay,
   getDatesInNextThreeDays,
   getDatesInWeek,
+  getOrderOfEvent,
   modeToNum,
   typedMemo,
 } from '../utils'
@@ -192,6 +193,9 @@ function _CalendarContainer<T>({
     }
   }, [mode, targetDate, locale, weekEndsOn, weekStartsOn])
 
+  // Performance optimizations for rendering events on calendar. This will load all the expensive filters and sorts
+  // for the events
+  const dateRangeStr = JSON.stringify(dateRange)
   const dayEventsHash = React.useMemo(() => {
     const hash = new Map<number | string, ICalendarEvent<T>[]>()
 
@@ -241,20 +245,31 @@ function _CalendarContainer<T>({
           }
 
           if (thisDateCondition) {
+            const eventOrder = getOrderOfEvent(event, events)
+            event.eventOrder = eventOrder
             eventsThisDateHash.push(event)
           } else if (endsThisDateCondition) {
             event.start = dayjs(event.end).startOf('day').toDate()
+            const eventOrder = getOrderOfEvent(event, events)
+            event.eventOrder = eventOrder
             eventsEndsThisDateHash.push(event)
           } else if (beforeAndAfterThisDateCondition) {
             event.start = dayjs(event.end).startOf('day').toDate()
             event.end = dayjs(event.end).endOf('day').toDate()
+            const eventOrder = getOrderOfEvent(event, events)
+            event.eventOrder = eventOrder
             eventsBeforeAndAfterThisDateHash.push(event)
           }
         })
       }
     })
+
     return hash
-  }, [dateRange, events, mode])
+  }, [
+    dateRangeStr,
+    JSON.stringify(events),
+    mode,
+  ]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const _cellHeight = React.useMemo(
     () => (cellHeight ? cellHeight : Math.max(height - 30, MIN_HEIGHT) / 24),
