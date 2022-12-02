@@ -1,3 +1,8 @@
+import 'dayjs/locale/pt-br'
+import 'dayjs/locale/es'
+import 'dayjs/locale/fr'
+import 'dayjs/locale/fr-ca'
+
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 
