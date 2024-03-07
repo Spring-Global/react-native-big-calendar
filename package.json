@@ -1,6 +1,6 @@
 {
   "name": "@spring-global/react-native-big-calendar",
-  "version": "2.1.35",
+  "version": "2.1.37",
   "main": "build/index.js",
   "jsnext:main": "build/index.es.js",
   "module": "build/index.es.js",
@@ -30,7 +30,7 @@
   "dependencies": {
     "calendarize": "^1.1.1",
     "dayjs": "^1.10.6",
-    "merge-anything": "4.0.1"
+    "merge-anything": "5.1.7"
   },
   "peerDependencies": {
     "react": "^16.8.3"
